@@ -370,10 +370,23 @@ async function getEmotionalVerse(emotion) {
                         ${formatText(comfortMatch[1].trim())}
                     </p>
                     <div id="audio-player" style="margin: 15px 0;">
-                        <button onclick="playPrayer('${encodeURIComponent(prayerText)}')" id="play-button">
-                            <span id="play-text">${t('playPrayer')}</span>
-                            <span id="loading-spinner" style="display: none;">${t('generatingAudio')}</span>
-                        </button>
+                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                            <button onclick="playPrayer('${encodeURIComponent(prayerText)}')" id="play-button">
+                                <span id="play-text">${t('playPrayer')}</span>
+                                <span id="loading-spinner" style="display: none;">${t('generatingAudio')}</span>
+                            </button>
+                            <div style="margin-left: 15px; display: flex; align-items: center;">
+                                <span id="voice-selector-label" style="margin-right: 5px;">${t('voiceSelector')}:</span>
+                                <select id="voice-selector" style="padding: 5px; border-radius: 5px;">
+                                    <option value="alloy">${t('alloy')}</option>
+                                    <option value="echo">${t('echo')}</option>
+                                    <option value="fable">${t('fable')}</option>
+                                    <option value="onyx">${t('onyx')}</option>
+                                    <option value="nova">${t('nova')}</option>
+                                    <option value="shimmer">${t('shimmer')}</option>
+                                </select>
+                            </div>
+                        </div>
                         <audio id="prayer-audio" controls style="display: none; margin-top: 10px; width: 100%;"></audio>
                     </div>
                     <p style="color: #2980b9; margin-top: 20px; line-height: 1.6;">
@@ -401,6 +414,8 @@ async function playPrayer(encodedText) {
     const button = document.getElementById('play-button');
     const spinner = document.getElementById('loading-spinner');
     const playText = document.getElementById('play-text');
+    const voiceSelector = document.getElementById('voice-selector');
+    const selectedVoice = voiceSelector ? voiceSelector.value : 'alloy';
     
     try {
         button.disabled = true;
@@ -417,7 +432,7 @@ async function playPrayer(encodedText) {
             },
             body: JSON.stringify({
                 model: "tts-1",
-                voice: "sage",
+                voice: selectedVoice,
                 input: text,
                 response_format: "mp3"
             })

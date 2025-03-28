@@ -16,6 +16,13 @@ const translations = {
         prayer: '禱告詞：',
         playPrayer: '▶ 播放禱告詞',
         generatingAudio: '⏳ 生成音頻中...',
+        voiceSelector: '選擇聲音',
+        alloy: 'Alloy (平衡)',
+        echo: 'Echo (深沉)',
+        fable: 'Fable (溫暖)',
+        onyx: 'Onyx (強勁)',
+        nova: 'Nova (友善)',
+        shimmer: 'Shimmer (明亮)',
         apiKeyNotSet: '❌ API金鑰未設置，無法獲取經文',
         errorGettingVerse: '❌ 獲取經文時出錯，請稍後再試',
         audioPlayError: '無法播放音頻，請稍後再試',
@@ -39,6 +46,13 @@ const translations = {
         prayer: '祷告词：',
         playPrayer: '▶ 播放祷告词',
         generatingAudio: '⏳ 生成音频中...',
+        voiceSelector: '选择声音',
+        alloy: 'Alloy (平衡)',
+        echo: 'Echo (深沉)',
+        fable: 'Fable (温暖)',
+        onyx: 'Onyx (强劲)',
+        nova: 'Nova (友善)',
+        shimmer: 'Shimmer (明亮)',
         apiKeyNotSet: '❌ API密钥未设置，无法获取经文',
         errorGettingVerse: '❌ 获取经文时出错，请稍后再试',
         audioPlayError: '无法播放音频，请稍后再试',
@@ -62,6 +76,13 @@ const translations = {
         prayer: 'Prayer:',
         playPrayer: '▶ Play Prayer',
         generatingAudio: '⏳ Generating audio...',
+        voiceSelector: 'Select Voice',
+        alloy: 'Alloy (Balanced)',
+        echo: 'Echo (Deep)',
+        fable: 'Fable (Warm)',
+        onyx: 'Onyx (Strong)',
+        nova: 'Nova (Friendly)',
+        shimmer: 'Shimmer (Bright)',
         apiKeyNotSet: '❌ API key not set, cannot retrieve scripture',
         errorGettingVerse: '❌ Error getting scripture, please try again later',
         audioPlayError: 'Cannot play audio, please try again later',
@@ -85,6 +106,13 @@ const translations = {
         prayer: '祈り：',
         playPrayer: '▶ 祈りを再生',
         generatingAudio: '⏳ 音声を生成中...',
+        voiceSelector: '音声を選択',
+        alloy: 'Alloy (バランス)',
+        echo: 'Echo (深い)',
+        fable: 'Fable (温かい)',
+        onyx: 'Onyx (力強い)',
+        nova: 'Nova (親しみやすい)',
+        shimmer: 'Shimmer (明るい)',
         apiKeyNotSet: '❌ APIキーが設定されていません、聖書の言葉を取得できません',
         errorGettingVerse: '❌ 聖書の言葉の取得中にエラーが発生しました、後でもう一度お試しください',
         audioPlayError: '音声を再生できません、後でもう一度お試しください',
@@ -143,6 +171,9 @@ function updatePageLanguage() {
     
     // Update verse content if it exists
     updateVerseContent();
+    
+    // Update voice selector if it exists
+    updateVoiceSelector();
 }
 
 // Update emotion buttons with translated text
@@ -171,7 +202,8 @@ function updateEmotionButtons() {
     buttons.forEach(btn => {
         if (btn.textContent === '我有其他狀況' || 
             btn.textContent === '我有其他状况' || 
-            btn.textContent === 'I have another situation') {
+            btn.textContent === 'I have another situation' ||
+            btn.textContent === '他の状況があります') {
             btn.textContent = t('otherSituation');
         }
     });
@@ -185,7 +217,8 @@ function updateVerseContent() {
     // Check if we're in the loading state
     if (verseElement.textContent.includes('正在尋找合適的經文') || 
         verseElement.textContent.includes('正在寻找合适的经文') || 
-        verseElement.textContent.includes('Finding appropriate scripture')) {
+        verseElement.textContent.includes('Finding appropriate scripture') ||
+        verseElement.textContent.includes('適切な聖書の言葉を探しています')) {
         verseElement.innerHTML = t('loadingVerse');
         return;
     }
@@ -193,14 +226,16 @@ function updateVerseContent() {
     // Check if we're in the error state
     if (verseElement.textContent.includes('API金鑰未設置') || 
         verseElement.textContent.includes('API密钥未设置') || 
-        verseElement.textContent.includes('API key not set')) {
+        verseElement.textContent.includes('API key not set') ||
+        verseElement.textContent.includes('APIキーが設定されていません')) {
         verseElement.innerHTML = t('apiKeyNotSet');
         return;
     }
     
     if (verseElement.textContent.includes('獲取經文時出錯') || 
         verseElement.textContent.includes('获取经文时出错') || 
-        verseElement.textContent.includes('Error getting scripture')) {
+        verseElement.textContent.includes('Error getting scripture') ||
+        verseElement.textContent.includes('聖書の言葉の取得中にエラーが発生しました')) {
         verseElement.innerHTML = t('errorGettingVerse');
         return;
     }
@@ -209,7 +244,7 @@ function updateVerseContent() {
     const h3 = verseElement.querySelector('h3');
     if (h3) {
         // Extract the emotion from the heading
-        const emotionMatch = h3.textContent.match(/「(.+?)」/);
+        const emotionMatch = h3.textContent.match(/「(.+?)」/) || h3.textContent.match(/"(.+?)"/);
         const emotion = emotionMatch ? emotionMatch[1] : '';
         
         h3.textContent = t('verseForEmotion', { emotion });
@@ -234,6 +269,24 @@ function updateVerseContent() {
     
     const loadingSpinner = document.getElementById('loading-spinner');
     if (loadingSpinner) loadingSpinner.textContent = t('generatingAudio');
+    
+    // Update voice selector label
+    const voiceSelectorLabel = document.getElementById('voice-selector-label');
+    if (voiceSelectorLabel) voiceSelectorLabel.textContent = t('voiceSelector') + ':';
+}
+
+// Update voice selector with translated text
+function updateVoiceSelector() {
+    const voiceSelector = document.getElementById('voice-selector');
+    if (!voiceSelector) return;
+    
+    // Update voice options
+    Array.from(voiceSelector.options).forEach(option => {
+        const voiceKey = option.value.toLowerCase();
+        if (translations[getCurrentLanguage()][voiceKey]) {
+            option.textContent = translations[getCurrentLanguage()][voiceKey];
+        }
+    });
 }
 
 // Initialize language on page load
