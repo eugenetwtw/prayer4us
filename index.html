@@ -16,8 +16,13 @@
         <div id="verse" style="margin-top: 30px;"></div>
     </div>
 
-    <!-- 環境變數設置 - 本地開發用，在生產環境會被 .gitignore 忽略 -->
-    <script src=".env.js"></script>
+    <!-- 環境變數設置 -->
+    <script>
+        // 創建一個空的環境變數對象，以防 .env.js 不存在
+        window.ENV = window.ENV || {};
+    </script>
+    <!-- 嘗試載入環境變數文件（本地開發用） -->
+    <script src=".env.js" onerror="console.warn('未找到 .env.js 文件，這在生產環境中是正常的')"></script>
     <script src="js/env-config.js"></script>
     <script src="js/main.js"></script>
 </body>

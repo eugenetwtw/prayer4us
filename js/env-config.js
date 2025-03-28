@@ -11,36 +11,39 @@ async function getApiKey() {
     return window.ENV.OPENAI_API_KEY;
   }
   
-  // 在 Vercel 環境中，嘗試從 __NEXT_DATA__ 獲取環境變數
-  // 這是 Vercel 注入到頁面的數據對象
-  try {
-    // 檢查是否在 Vercel 環境中
-    if (window.location.hostname.includes('vercel.app') || 
-        window.location.hostname.includes('now.sh')) {
-      
+  // 檢查是否在 Vercel 環境中
+  const isVercelEnv = window.location.hostname.includes('vercel.app') || 
+                      window.location.hostname.includes('now.sh') ||
+                      !window.location.hostname.includes('localhost');
+  
+  if (isVercelEnv) {
+    try {
+      console.log('正在從 Vercel API 獲取環境變數...');
       // 嘗試從 Vercel 的 API 獲取環境變數
       const response = await fetch('/api/env');
-      if (response.ok) {
-        const data = await response.json();
-        if (data.OPENAI_API_KEY) {
-          window.ENV.OPENAI_API_KEY = data.OPENAI_API_KEY;
-          return data.OPENAI_API_KEY;
-        }
+      
+      if (!response.ok) {
+        throw new Error(`API 回應錯誤: ${response.status}`);
       }
+      
+      const data = await response.json();
+      
+      if (data.OPENAI_API_KEY) {
+        console.log('成功從 API 獲取環境變數');
+        window.ENV.OPENAI_API_KEY = data.OPENAI_API_KEY;
+        return data.OPENAI_API_KEY;
+      } else {
+        console.warn('API 回應中沒有 OPENAI_API_KEY');
+      }
+    } catch (error) {
+      console.warn('無法從 Vercel API 獲取環境變數:', error);
     }
-  } catch (error) {
-    console.warn('無法從 Vercel 獲取環境變數:', error);
+  } else {
+    console.log('在本地環境中，使用 .env.js 中的環境變數');
   }
   
-  // 在本地環境中，嘗試從 window.ENV 獲取 API 金鑰
-  // 這個對象應該在 .env.js 中被設置
-  try {
-    // 如果沒有設置，返回空字符串
-    return window.ENV.OPENAI_API_KEY || '';
-  } catch (error) {
-    console.error('無法獲取環境變數:', error);
-    return '';
-  }
+  // 返回本地環境變數或空字符串
+  return window.ENV.OPENAI_API_KEY || '';
 }
 
 // 導出 getApiKey 函數

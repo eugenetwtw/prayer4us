@@ -1,0 +1,19 @@
+{
+  "name": "prayer-app",
+  "version": "1.0.0",
+  "description": "聖經經文情緒支持網站",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server"
+  },
+  "engines": {
+    "node": ">=14.x"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "author": "",
+  "license": "MIT"
+}
