@@ -1,4 +1,4 @@
-# Pray with You
+# Pray with You, Prayer for us
 
 This is an emotional support website based on Bible verses, which can provide relevant Bible verses, explanations, and prayers according to the user's emotional state.
 
