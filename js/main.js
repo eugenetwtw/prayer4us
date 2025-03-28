@@ -18,6 +18,7 @@ async function loadApiKey() {
 
 let emotionHistory = []; // 用於記錄情緒列表歷史
 let usedEmotions = new Set(); // 記錄已使用過的情緒
+let otherSituationClickCount = 0; // 追蹤「我有其他狀況」按鈕點擊次數
 
 // 初始化獲取首頁情緒
 async function initEmotions() {
@@ -100,6 +101,14 @@ function createEmotionButtons(emotions) {
 // 加載更多情緒
 async function loadMoreEmotions() {
     try {
+        otherSituationClickCount++; // 增加點擊計數
+        
+        // 第三次點擊時顯示輸入框
+        if (otherSituationClickCount >= 3) {
+            showCustomEmotionInput();
+            return;
+        }
+        
         document.getElementById('mainEmotions').innerHTML = '⏳ 正在尋找更多情緒...';
         const newEmotions = await generateEmotions('需要不同於之前的情緒狀態');
         emotionHistory.push(newEmotions);
@@ -110,12 +119,82 @@ async function loadMoreEmotions() {
     }
 }
 
+// 顯示自定義情緒輸入框
+function showCustomEmotionInput() {
+    const container = document.getElementById('mainEmotions');
+    container.innerHTML = '';
+    
+    // 創建輸入框
+    const inputContainer = document.createElement('div');
+    inputContainer.style.margin = '20px auto';
+    inputContainer.style.maxWidth = '500px';
+    
+    const label = document.createElement('p');
+    label.textContent = '請描述您目前的困難狀況：';
+    label.style.marginBottom = '10px';
+    label.style.fontWeight = 'bold';
+    
+    const textarea = document.createElement('textarea');
+    textarea.id = 'customEmotionInput';
+    textarea.style.width = '100%';
+    textarea.style.minHeight = '100px';
+    textarea.style.padding = '10px';
+    textarea.style.borderRadius = '8px';
+    textarea.style.border = '1px solid #ccc';
+    textarea.style.marginBottom = '15px';
+    textarea.style.fontFamily = 'inherit';
+    
+    const submitBtn = document.createElement('button');
+    submitBtn.textContent = '提交';
+    submitBtn.style.backgroundColor = '#2196F3';
+    submitBtn.onclick = submitCustomEmotion;
+    
+    const resetBtn = document.createElement('button');
+    resetBtn.textContent = '重新選擇情緒';
+    resetBtn.style.backgroundColor = '#666';
+    resetBtn.onclick = resetEmotionSelection;
+    
+    inputContainer.appendChild(label);
+    inputContainer.appendChild(textarea);
+    inputContainer.appendChild(submitBtn);
+    inputContainer.appendChild(resetBtn);
+    
+    container.appendChild(inputContainer);
+}
+
+// 提交自定義情緒
+function submitCustomEmotion() {
+    const customEmotion = document.getElementById('customEmotionInput').value.trim();
+    if (customEmotion) {
+        getEmotionalVerse(customEmotion);
+    } else {
+        alert('請輸入您的困難狀況');
+    }
+}
+
+// 重置情緒選擇
+function resetEmotionSelection() {
+    otherSituationClickCount = 0; // 重置計數器
+    initEmotions(); // 重新初始化情緒按鈕
+    document.getElementById('backButton').style.display = 'none';
+    document.getElementById('verse').innerHTML = ''; // 清空經文區域
+}
+
 // 返回上一個情緒列表
 function showPreviousEmotions() {
     if (emotionHistory.length > 1) {
         emotionHistory.pop(); // 移除當前列表
         const prevEmotions = emotionHistory[emotionHistory.length-1];
         createEmotionButtons(prevEmotions);
+        
+        // 如果返回到第一個情緒列表，重置計數器
+        if (emotionHistory.length === 1) {
+            otherSituationClickCount = 0;
+        } else {
+            // 否則減少計數器
+            otherSituationClickCount--;
+            if (otherSituationClickCount < 0) otherSituationClickCount = 0;
+        }
     }
     if (emotionHistory.length === 1) {
         document.getElementById('backButton').style.display = 'none';
