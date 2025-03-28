@@ -52,20 +52,32 @@
    - 點擊 "Import"
 
 3. 配置環境變數
-   - 在項目設置頁面，點擊 "Settings" > "Environment Variables"
-   - 添加名為 `OPENAI_API_KEY` 的環境變數，值為您的 OpenAI API 金鑰
-   - 點擊 "Save"
+   - 在導入項目過程中，或在項目導入後：
+     - 點擊 "Settings" > "Environment Variables"
+     - 添加一個新的環境變數：
+       - 名稱：`OPENAI_API_KEY`
+       - 值：您的 OpenAI API 金鑰
+       - 環境：Production, Preview, Development (全選)
+     - 點擊 "Save"
+   - **重要提示**：確保環境變數名稱完全匹配 `OPENAI_API_KEY`，不要使用 `@` 符號或其他前綴
 
 4. 部署項目
-   - 返回 "Deployments" 頁面
+   - 如果您是在項目導入後添加的環境變數，請返回 "Deployments" 頁面
    - 點擊 "Redeploy" 以使用新的環境變數重新部署項目
    - 等待部署完成，然後點擊 "Visit" 查看您的網站
 
 ### 重要說明
 
 - 本項目已經配置為自動從 Vercel 環境變數中獲取 API 金鑰
+- 項目使用 API 路由 (`/api/env`) 安全地將環境變數暴露給前端
 - `.env.js` 文件僅用於本地開發，不會被上傳到 GitHub
 - 如果您需要更新 API 金鑰，只需在 Vercel 控制台中更新環境變數，然後重新部署項目
+
+### 技術實現說明
+
+- 在 Vercel 部署中，環境變數通過 API 路由 (`/api/env.js`) 安全地暴露給前端
+- API 路由是一個 Vercel 無伺服器函數，只返回前端需要的特定環境變數
+- 前端代碼會檢測是否在 Vercel 環境中，並相應地從 API 或本地獲取環境變數
 
 ## 注意事項
 
