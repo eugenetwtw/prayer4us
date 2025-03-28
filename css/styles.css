@@ -60,6 +60,25 @@ button:hover {
     background: #2980b9;
     transform: scale(1.05);
 }
+
+/* 自定義情緒輸入框樣式 */
+#customEmotionInput {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-family: inherit;
+    font-size: 16px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    resize: vertical;
+}
+
+#customEmotionInput:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
+}
 #prayer-audio {
     background: #f8f9fa;
     border-radius: 8px;
