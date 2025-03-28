@@ -1,3 +1,109 @@
+# Pray with You
+
+This is an emotional support website based on Bible verses, which can provide relevant Bible verses, explanations, and prayers according to the user's emotional state.
+
+## Features
+
+- Dynamically generate emotion options
+- Provide relevant Bible verses based on the selected emotion
+- Offer verse explanations
+- Generate prayers
+- Support voice playback of prayers
+
+## Technical Architecture
+
+- HTML/CSS/JavaScript
+- OpenAI API (GPT-4o-mini for content generation, TTS-1 for speech synthesis)
+
+## Local Setup
+
+1. Copy `.env.example.js` to `.env.js`
+2. Fill in your OpenAI API key in `.env.js`
+3. Run the project using a local server, for example:
+   ```
+   npx http-server
+   ```
+   or use the Live Server extension in VSCode
+
+## Deploy to Vercel
+
+### Prerequisites
+
+1. Ensure you have a GitHub account
+2. Ensure you have a Vercel account
+3. Ensure you have a valid OpenAI API key
+
+### Deployment Steps
+
+1. Create a new repository on GitHub
+   ```
+   git init
+   git add .
+   git commit -m "Initial commit"
+   git branch -M main
+   git remote add origin https://github.com/your-username/your-repo-name.git
+   git push -u origin main
+   ```
+
+2. Import the repository on Vercel
+   - Log in to the Vercel dashboard (https://vercel.com)
+   - Click "Add New" > "Project"
+   - Select the GitHub repository you just created
+   - Click "Import"
+   - On the project settings page, ensure:
+     - Framework Preset: Select "Next.js"
+     - Build Command: `npm run build` (should be auto-filled)
+     - Output Directory: `.next` (should be auto-filled)
+     - Install Command: `npm install` (should be auto-filled)
+
+3. Configure environment variables
+   - During the import process, or after the project is imported:
+     - Click "Settings" > "Environment Variables"
+     - Add a new environment variable:
+       - Name: `OPENAI_API_KEY`
+       - Value: Your OpenAI API key
+       - Environments: Production, Preview, Development (select all)
+     - Click "Save"
+   - **Important Note**:
+     - Ensure the environment variable name exactly matches `OPENAI_API_KEY`, without `@` symbols or other prefixes
+     - Environment variables are case-sensitive, so ensure an exact match
+
+4. Deploy the project
+   - If you added environment variables after importing the project, go back to the "Deployments" page
+   - Click "Redeploy" to redeploy the project with the new environment variables
+   - Wait for the deployment to complete, then click "Visit" to view your website
+
+5. Test API routes
+   - After deployment, visit `https://your-website-domain/api/env` to confirm the API route is working
+   - If JSON data is returned, the API route is functioning correctly
+   - If a 404 error is returned, check Vercel logs to troubleshoot the issue
+
+6. Troubleshooting
+   - If the website doesn’t work properly after deployment:
+     - Check the browser console for error messages
+     - Verify that environment variables are correctly set
+     - View build logs and function logs in the Vercel dashboard
+     - Try directly accessing the API route `/api/env` to see if data is returned
+     - If the API route isn’t working, try redeploying the project
+
+### Important Notes
+
+- This project is configured to automatically retrieve the API key from Vercel environment variables
+- The project uses an API route (`/api/env`) to securely expose environment variables to the frontend
+- The `.env.js` file is only used for local development and will not be uploaded to GitHub
+- If you need to update the API key, simply update the environment variable in the Vercel dashboard and redeploy the project
+
+### Technical Implementation Notes
+
+- In the Vercel deployment, environment variables are securely exposed to the frontend via an API route (`/api/env.js`)
+- The API route is a Vercel serverless function that only returns specific environment variables needed by the frontend
+- The frontend code detects whether it’s running in a Vercel environment and retrieves environment variables from the API or locally as appropriate
+
+## Notes
+
+- Use `.env.example.js` as a template to create your own `.env.js` file
+- In a production environment, a more secure method should be used to manage API keys
+
 # 我陪您禱告
 
 這是一個基於聖經經文的情緒支持網站，可以根據用戶的情緒狀態提供相關的聖經經文、解說和禱告詞。
