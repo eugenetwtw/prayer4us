@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我陪您禱告</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <h1>我陪您禱告</h1>
+    <div id="buttons">
+        <!-- 移除原有按鈕，改為動態生成 -->
+        <div id="mainEmotions"></div>
+        <div id="secondaryEmotions" style="display: none;"></div>
+        <button onclick="showPreviousEmotions()" style="display: none; background-color: #666;" id="backButton">↩ 上一個情緒列表</button>
+        <div id="verse" style="margin-top: 30px;"></div>
+    </div>
+
+    <!-- 環境變數設置 - 本地開發用，在生產環境會被 .gitignore 忽略 -->
+    <script src=".env.js"></script>
+    <script src="js/env-config.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

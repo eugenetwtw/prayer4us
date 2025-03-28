@@ -1,0 +1,82 @@
+body {
+    font-family: "Microsoft JhengHei", Arial, sans-serif;
+    text-align: center;
+    margin-top: 50px;
+}
+button {
+    margin: 8px;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+#verse {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin: 30px auto;
+}
+#verse p {
+    margin: 15px 0;
+    padding: 15px;
+    border-left: 4px solid #eee;
+    transition: border-color 0.3s ease;
+}
+#verse p:hover {
+    border-left-color: #3498db;
+}
+#verse strong {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 1.1em;
+    color: #2c3e50;
+}
+/* 優化播放器外觀 */
+#elevenlabs-audionative-widget {
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    overflow: hidden;
+    background: #f8f9fa;
+}
+#elevenlabs-audionative-widget a {
+    color: #3498db;
+    text-decoration: none;
+}
+#elevenlabs-audionative-widget a:hover {
+    text-decoration: underline;
+}
+#play-button {
+    transition: all 0.3s ease;
+    padding: 12px 24px;
+    border-radius: 25px;
+}
+#play-button:hover {
+    background: #2980b9;
+    transform: scale(1.05);
+}
+#prayer-audio {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 10px;
+}
+/* 經文段落樣式 */
+#verse p:nth-of-type(1) {
+    color: #2c3e50;
+    border-left-color: #3498db;
+}
+/* 說明段落樣式 */
+#verse p:nth-of-type(2) {
+    color: #27ae60;
+    border-left-color: #2ecc71;
+}
+/* 禱告詞段落樣式 */
+#verse p:nth-of-type(3) {
+    color: #2980b9;
+    border-left-color: #9b59b6;
+}
