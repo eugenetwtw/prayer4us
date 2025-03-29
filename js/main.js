@@ -307,7 +307,9 @@ async function getEmotionalVerse(emotion) {
     }
     
     try {
-        document.getElementById('verse').innerHTML = t('loadingVerse');
+        const verseElement = document.getElementById('verse');
+        verseElement.innerHTML = t('loadingVerse');
+        verseElement.classList.add('loading-verse');
         
         const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
             method: 'POST',
@@ -358,7 +360,9 @@ async function getEmotionalVerse(emotion) {
             const formatText = (text) => text.replace(/\n/g, '<br>');
             const prayerText = prayerMatch[1].trim();
             
-            document.getElementById('verse').innerHTML = `
+            const verseElement = document.getElementById('verse');
+            verseElement.classList.remove('loading-verse');
+            verseElement.innerHTML = `
                 <div style="text-align: left; max-width: 600px; margin: 20px auto;">
                     <h3 style="color: #2c3e50;">${t('verseForEmotion', { emotion })}</h3>
                     <p style="font-size: 1.1em;">
@@ -396,11 +400,15 @@ async function getEmotionalVerse(emotion) {
                 </div>
             `;
         } else {
-            document.getElementById('verse').innerHTML = `${t('parseError')}<br>${responseText}`;
+            const verseElement = document.getElementById('verse');
+            verseElement.classList.remove('loading-verse');
+            verseElement.innerHTML = `${t('parseError')}<br>${responseText}`;
         }
     } catch (error) {
         console.error('錯誤：', error);
-        document.getElementById('verse').innerHTML = t('errorGettingVerse');
+        const verseElement = document.getElementById('verse');
+        verseElement.classList.remove('loading-verse');
+        verseElement.innerHTML = t('errorGettingVerse');
     }
 }
 
