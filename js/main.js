@@ -36,7 +36,8 @@ async function initEmotions() {
         'zh-Hant': '首次訪問，請推薦5個常見的情緒狀態',
         'zh-Hans': '首次访问，请推荐5个常见的情绪状态',
         'en': 'First visit, please recommend 5 common emotional states',
-        'ja': '初回訪問、一般的な感情状態を5つ推薦してください'
+        'ja': '初回訪問、一般的な感情状態を5つ推薦してください',
+        'ko': '첫 방문, 일반적인 감정 상태 5가지를 추천해 주세요'
     };
     
     const prompt = promptByLang[currentLanguage] || promptByLang['zh-Hant'];
@@ -73,7 +74,8 @@ function createLanguageSelector() {
         { code: 'zh-Hant', name: '繁體中文' },
         { code: 'zh-Hans', name: '简体中文' },
         { code: 'en', name: 'English' },
-        { code: 'ja', name: '日本語' }
+        { code: 'ja', name: '日本語' },
+        { code: 'ko', name: '한국어' }
     ];
     
     languages.forEach(lang => {
@@ -109,7 +111,8 @@ async function generateEmotions(context) {
             'zh-Hant': ['焦慮', '悲傷', '孤獨', '壓力', '喜樂', t('otherSituation')],
             'zh-Hans': ['焦虑', '悲伤', '孤独', '压力', '喜乐', t('otherSituation')],
             'en': ['Anxiety', 'Sadness', 'Loneliness', 'Stress', 'Joy', t('otherSituation')],
-            'ja': ['不安', '悲しみ', '孤独', 'ストレス', '喜び', t('otherSituation')]
+            'ja': ['不安', '悲しみ', '孤独', 'ストレス', '喜び', t('otherSituation')],
+            'ko': ['불안', '슬픔', '외로움', '스트레스', '기쁨', t('otherSituation')]
         };
         
         return fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
@@ -126,10 +129,11 @@ async function generateEmotions(context) {
                 model: 'gpt-4o-mini',
                 messages: [{
                     role: 'user',
-                    content: `根據以下情境提供5個${currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : '中文'}情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
+                    content: `根據以下情境提供5個${currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : '中文'}情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
                     情境：${context}
                     範例輸出：${currentLanguage === 'en' ? 'Anxiety Sadness Loneliness Stress Joy ' + t('otherSituation') : 
                               currentLanguage === 'ja' ? '不安 悲しみ 孤独 ストレス 喜び ' + t('otherSituation') : 
+                              currentLanguage === 'ko' ? '불안 슬픔 외로움 스트레스 기쁨 ' + t('otherSituation') : 
                               '焦慮 悲傷 孤獨 壓力 喜樂 ' + t('otherSituation')}`
                 }],
                 max_tokens: 100,
@@ -161,7 +165,8 @@ async function generateEmotions(context) {
             'zh-Hant': ['焦慮', '悲傷', '孤獨', '壓力', '喜樂', t('otherSituation')],
             'zh-Hans': ['焦虑', '悲伤', '孤独', '压力', '喜乐', t('otherSituation')],
             'en': ['Anxiety', 'Sadness', 'Loneliness', 'Stress', 'Joy', t('otherSituation')],
-            'ja': ['不安', '悲しみ', '孤独', 'ストレス', '喜び', t('otherSituation')]
+            'ja': ['不安', '悲しみ', '孤独', 'ストレス', '喜び', t('otherSituation')],
+            'ko': ['불안', '슬픔', '외로움', '스트레스', '기쁨', t('otherSituation')]
         };
         
         return fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
@@ -180,7 +185,9 @@ function createEmotionButtons(emotions) {
             if (emotion === t('otherSituation') || 
                emotion === '我有其他狀況' || 
                emotion === '我有其他状况' || 
-               emotion === 'I have another situation') {
+               emotion === 'I have another situation' ||
+               emotion === '他の状況があります' ||
+               emotion === '다른 상황이 있어요') {
                 loadMoreEmotions();
             } else {
                 getEmotionalVerse(emotion);
@@ -189,7 +196,9 @@ function createEmotionButtons(emotions) {
         if (emotion === t('otherSituation') || 
            emotion === '我有其他狀況' || 
            emotion === '我有其他状况' || 
-           emotion === 'I have another situation') {
+           emotion === 'I have another situation' ||
+           emotion === '他の状況があります' ||
+           emotion === '다른 상황이 있어요') {
             btn.style.backgroundColor = '#2196F3';
         }
         container.appendChild(btn);
@@ -322,9 +331,9 @@ async function getEmotionalVerse(emotion) {
                 messages: [{ 
                     role: 'user',
                     content: `請針對「${emotion}」情緒：
-                    1. 提供合適聖經經文(格式：『經文』書名 章:節)${currentLanguage === 'en' || currentLanguage === 'ja' ? '只需' + (currentLanguage === 'en' ? '英文' : '日文') : '同時提出中英文'}
-                    2. 簡明的解說，50字內，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : '用繁體中文'}
-                    3. 禱告詞，你是一個資深慈愛的牧師，同情用戶的狀態，深情地為用戶禱告，為用戶設身處地思考，祈求上帝給用戶安慰和力量，用華麗的辭藻，用詩歌般的語言，用最真摯的情感，寫出最感人的禱告詞，激發用戶的感受，讓靈性灌注與降臨，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : '用繁體中文'}
+                    1. 提供合適聖經經文(格式：『經文』書名 章:節)${currentLanguage === 'en' || currentLanguage === 'ja' || currentLanguage === 'ko' ? '只需' + (currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : '韓文') : '同時提出中英文'}
+                    2. 簡明的解說，50字內，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
+                    3. 禱告詞，你是一個資深慈愛的牧師，同情用戶的狀態，深情地為用戶禱告，為用戶設身處地思考，祈求上帝給用戶安慰和力量，用華麗的辭藻，用詩歌般的語言，用最真摯的情感，寫出最感人的禱告詞，激發用戶的感受，讓靈性灌注與降臨，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
                     請用以下格式回應：
                     【${t('scripture').replace('：', '')}】{內容}
                     【${t('explanation').replace('：', '')}】{解說}

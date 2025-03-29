@@ -119,6 +119,36 @@ const translations = {
         parseError: '⚠️ 応答を解析できませんでした、以下は元のコンテンツです：',
         apiKeyNotSetAudio: 'APIキーが設定されていません、音声を再生できません',
         languageSelector: '言語Language'
+    },
+    // Korean
+    'ko': {
+        title: '함께 기도해요',
+        backButton: '↩ 이전 감정 목록',
+        loadingEmotions: '⏳ 감정을 찾는 중...',
+        customEmotionLabel: '현재 상황을 설명해 주세요:',
+        submitButton: '제출',
+        resetButton: '감정 선택 초기화',
+        otherSituation: '다른 상황이 있어요',
+        loadingVerse: '⏳ 적절한 성경 구절을 찾는 중...',
+        verseForEmotion: '📖 "{emotion}"을(를) 경험하고 있는 당신에게:',
+        scripture: '성경 구절:',
+        explanation: '설명:',
+        prayer: '기도:',
+        playPrayer: '▶ 기도 재생',
+        generatingAudio: '⏳ 오디오 생성 중...',
+        voiceSelector: '음성 선택',
+        alloy: 'Alloy (균형)',
+        echo: 'Echo (깊은)',
+        fable: 'Fable (따뜻한)',
+        onyx: 'Onyx (강한)',
+        nova: 'Nova (친근한)',
+        shimmer: 'Shimmer (밝은)',
+        apiKeyNotSet: '❌ API 키가 설정되지 않았습니다. 성경 구절을 가져올 수 없습니다',
+        errorGettingVerse: '❌ 성경 구절을 가져오는 중 오류가 발생했습니다. 나중에 다시 시도해 주세요',
+        audioPlayError: '오디오를 재생할 수 없습니다. 나중에 다시 시도해 주세요',
+        parseError: '⚠️ 응답을 분석할 수 없습니다. 다음은 원본 내용입니다:',
+        apiKeyNotSetAudio: 'API 키가 설정되지 않았습니다. 오디오를 재생할 수 없습니다',
+        languageSelector: '언어Language'
     }
 };
 
@@ -203,7 +233,8 @@ function updateEmotionButtons() {
         if (btn.textContent === '我有其他狀況' || 
             btn.textContent === '我有其他状况' || 
             btn.textContent === 'I have another situation' ||
-            btn.textContent === '他の状況があります') {
+            btn.textContent === '他の状況があります' ||
+            btn.textContent === '다른 상황이 있어요') {
             btn.textContent = t('otherSituation');
         }
     });
@@ -218,7 +249,8 @@ function updateVerseContent() {
     if (verseElement.textContent.includes('正在尋找合適的經文') || 
         verseElement.textContent.includes('正在寻找合适的经文') || 
         verseElement.textContent.includes('Finding appropriate scripture') ||
-        verseElement.textContent.includes('適切な聖書の言葉を探しています')) {
+        verseElement.textContent.includes('適切な聖書の言葉を探しています') ||
+        verseElement.textContent.includes('적절한 성경 구절을 찾는 중')) {
         verseElement.innerHTML = t('loadingVerse');
         return;
     }
@@ -227,7 +259,8 @@ function updateVerseContent() {
     if (verseElement.textContent.includes('API金鑰未設置') || 
         verseElement.textContent.includes('API密钥未设置') || 
         verseElement.textContent.includes('API key not set') ||
-        verseElement.textContent.includes('APIキーが設定されていません')) {
+        verseElement.textContent.includes('APIキーが設定されていません') ||
+        verseElement.textContent.includes('API 키가 설정되지 않았습니다')) {
         verseElement.innerHTML = t('apiKeyNotSet');
         return;
     }
@@ -235,7 +268,8 @@ function updateVerseContent() {
     if (verseElement.textContent.includes('獲取經文時出錯') || 
         verseElement.textContent.includes('获取经文时出错') || 
         verseElement.textContent.includes('Error getting scripture') ||
-        verseElement.textContent.includes('聖書の言葉の取得中にエラーが発生しました')) {
+        verseElement.textContent.includes('聖書の言葉の取得中にエラーが発生しました') ||
+        verseElement.textContent.includes('성경 구절을 가져오는 중 오류가 발생했습니다')) {
         verseElement.innerHTML = t('errorGettingVerse');
         return;
     }
