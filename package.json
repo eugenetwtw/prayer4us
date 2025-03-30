@@ -13,7 +13,10 @@
     "node": ">=14.x"
   },
   "dependencies": {
-    "next": "^12.3.4"
+    "@vercel/speed-insights": "^1.2.0",
+    "next": "^15.2.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "http-server": "^14.1.1"
