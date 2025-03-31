@@ -18,11 +18,8 @@ async function getApiKey() {
   
   if (isVercelEnv) {
     try {
-      console.log('正在從 Next.js API 路由獲取環境變數...');
-      
       // 使用完整的 URL 路徑
       const apiUrl = `${window.location.origin}/api/env`;
-      console.log('API URL:', apiUrl);
       
       // 嘗試從 Next.js API 路由獲取環境變數
       const response = await fetch(apiUrl, {
@@ -38,29 +35,17 @@ async function getApiKey() {
       }
       
       const data = await response.json();
-      // 遮蔽 API 金鑰，只顯示前 4 個字符和後 4 個字符
-      const maskedData = { ...data };
-      if (maskedData.OPENAI_API_KEY) {
-        const key = maskedData.OPENAI_API_KEY;
-        maskedData.OPENAI_API_KEY = key.length > 8 
-          ? `${key.substring(0, 4)}...${key.substring(key.length - 4)}`
-          : '****';
-      }
-      console.log('API 回應:', maskedData);
-      
       if (data.OPENAI_API_KEY) {
-        console.log('成功從 API 獲取環境變數');
         window.ENV.OPENAI_API_KEY = data.OPENAI_API_KEY;
         return data.OPENAI_API_KEY;
       } else {
-        console.warn('API 回應中沒有 OPENAI_API_KEY');
+        // API 回應中沒有 OPENAI_API_KEY
       }
     } catch (error) {
-      console.warn('無法從 API 獲取環境變數:', error);
-      console.error('詳細錯誤:', error.message);
+      // 無法從 API 獲取環境變數
     }
   } else {
-    console.log('在本地環境中，使用 .env.js 中的環境變數');
+    // 在本地環境中，使用 .env.js 中的環境變數
   }
   
   // 返回本地環境變數或空字符串

@@ -8,11 +8,11 @@ async function loadApiKey() {
         // 使用 env-config.js 中的 getApiKey 函數
         apiKey = await window.getApiKey();
         if (!apiKey) {
-            console.error('API金鑰未設置');
+            // API金鑰未設置
             apiKey = ''; // 設置為空字符串，將使用備用情緒列表
         }
     } catch (error) {
-        console.error('無法載入環境變數:', error);
+        // 無法載入環境變數
         apiKey = ''; // 設置為空字符串，將使用備用情緒列表
     }
     
@@ -104,7 +104,7 @@ function createLanguageSelector() {
 // 用API生成情緒列表
 async function generateEmotions(context) {
     if (!apiKey) {
-        console.warn('API金鑰未設置，使用備用情緒列表');
+        // API金鑰未設置，使用備用情緒列表
         
         // 根據語言返回不同的備用情緒列表
         const fallbackEmotions = {
@@ -159,7 +159,7 @@ async function generateEmotions(context) {
         
         return newEmotions.slice(0, 5).concat(t('otherSituation'));
     } catch (error) {
-        console.error('獲取情緒列表失敗:', error);
+        // 獲取情緒列表失敗
         // 根據語言返回不同的備用情緒列表
         const fallbackEmotions = {
             'zh-Hant': ['焦慮', '悲傷', '孤獨', '壓力', '喜樂', t('otherSituation')],
@@ -414,7 +414,7 @@ async function getEmotionalVerse(emotion) {
             verseElement.innerHTML = `${t('parseError')}<br>${responseText}`;
         }
     } catch (error) {
-        console.error('錯誤：', error);
+        // 錯誤發生
         const verseElement = document.getElementById('verse');
         verseElement.classList.remove('loading-verse');
         verseElement.innerHTML = t('errorGettingVerse');
@@ -462,7 +462,7 @@ async function playPrayer(encodedText) {
         audioElement.style.display = 'block';
         audioElement.play();
     } catch (error) {
-        console.error('播放失敗:', error);
+        // 播放失敗
         alert(t('audioPlayError'));
     } finally {
         button.disabled = false;

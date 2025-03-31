@@ -22,7 +22,7 @@
         window.ENV = window.ENV || {};
     </script>
     <!-- 嘗試載入環境變數文件（本地開發用） -->
-    <script src=".env.js" onerror="console.warn('未找到 .env.js 文件，這在生產環境中是正常的')"></script>
+    <script src=".env.js" onerror="/* 本地開發環境變數文件不存在 */"></script>
     <script src="js/env-config.js"></script>
     <script src="js/translations.js"></script>
     <script src="js/main.js"></script>
