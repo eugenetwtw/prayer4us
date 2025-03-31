@@ -11,11 +11,25 @@ async function getApiKey() {
     return window.ENV.OPENAI_API_KEY;
   }
   
+  // 嘗試載入本地環境變數（僅用於開發環境）
+  if (window.location.hostname.includes('localhost')) {
+    try {
+      // 嘗試動態載入本地環境變數文件
+      const envScript = document.createElement('script');
+      envScript.src = '.env.js';
+      envScript.async = false;
+      document.head.appendChild(envScript);
+    } catch (e) {
+      // 本地環境變數載入失敗，忽略錯誤
+    }
+  }
+  
   // 檢查是否在 Vercel 環境中
   const isVercelEnv = window.location.hostname.includes('vercel.app') || 
                       window.location.hostname.includes('now.sh') ||
                       !window.location.hostname.includes('localhost');
   
+  // 如果在 Vercel 環境中，從 API 獲取環境變數
   if (isVercelEnv) {
     try {
       // 使用完整的 URL 路徑
