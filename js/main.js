@@ -327,7 +327,7 @@ async function getEmotionalVerse(emotion) {
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'gpt-4.5',
+                model: 'gpt-4o-mini',
                 messages: [{ 
                     role: 'user',
                     content: `請針對「${emotion}」情緒：
