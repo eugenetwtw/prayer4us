@@ -38,7 +38,15 @@ async function getApiKey() {
       }
       
       const data = await response.json();
-      console.log('API 回應:', data);
+      // 遮蔽 API 金鑰，只顯示前 4 個字符和後 4 個字符
+      const maskedData = { ...data };
+      if (maskedData.OPENAI_API_KEY) {
+        const key = maskedData.OPENAI_API_KEY;
+        maskedData.OPENAI_API_KEY = key.length > 8 
+          ? `${key.substring(0, 4)}...${key.substring(key.length - 4)}`
+          : '****';
+      }
+      console.log('API 回應:', maskedData);
       
       if (data.OPENAI_API_KEY) {
         console.log('成功從 API 獲取環境變數');
