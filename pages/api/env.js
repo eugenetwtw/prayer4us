@@ -1,4 +1,4 @@
-// API route to securely expose environment variables to the client
+// API route to check if environment variables are configured
 // This file will be deployed to Vercel as a serverless function
 
 export default function handler(req, res) {
@@ -25,13 +25,14 @@ export default function handler(req, res) {
     console.error('OPENAI_API_KEY environment variable is not set');
     return res.status(500).json({ 
       error: 'API key not configured',
-      envVars: Object.keys(process.env).filter(key => !key.includes('SECRET') && !key.includes('KEY')).join(', ')
+      apiKeyConfigured: false
     });
   }
 
-  // Return the environment variables
-  // Only expose specific variables that are needed by the client
+  // For security, we don't return the actual API key to the client
+  // Instead, we'll make the API requests server-side
+  // We just return a flag indicating that the API key is configured
   res.status(200).json({
-    OPENAI_API_KEY: apiKey
+    apiKeyConfigured: true
   });
 }
