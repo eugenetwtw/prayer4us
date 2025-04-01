@@ -29,11 +29,14 @@ async function getApiKey() {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
+        },
+        cache: 'no-store'
       });
       
       if (!response.ok) {
+        console.error(`API 回應錯誤: ${response.status}`, await response.text());
         throw new Error(`API 回應錯誤: ${response.status}`);
       }
       
@@ -46,6 +49,7 @@ async function getApiKey() {
         return data.OPENAI_API_KEY;
       } else {
         console.warn('API 回應中沒有 OPENAI_API_KEY');
+        console.warn('完整回應:', JSON.stringify(data));
       }
     } catch (error) {
       console.warn('無法從 API 獲取環境變數:', error);

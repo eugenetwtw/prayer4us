@@ -119,26 +119,33 @@ async function generateEmotions(context) {
     }
     
     try {
+        console.log('使用API金鑰生成情緒列表，金鑰長度:', apiKey ? apiKey.length : 0);
+        console.log('API金鑰前10個字符:', apiKey ? apiKey.substring(0, 10) + '...' : 'undefined');
+        
+        const requestBody = {
+            model: 'gpt-4o-mini',
+            messages: [{
+                role: 'user',
+                content: `根據以下情境提供5個${currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : '中文'}情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
+                情境：${context}
+                範例輸出：${currentLanguage === 'en' ? 'Anxiety Sadness Loneliness Stress Joy ' + t('otherSituation') : 
+                          currentLanguage === 'ja' ? '不安 悲しみ 孤独 ストレス 喜び ' + t('otherSituation') : 
+                          currentLanguage === 'ko' ? '불안 슬픔 외로움 스트레스 기쁨 ' + t('otherSituation') : 
+                          '焦慮 悲傷 孤獨 壓力 喜樂 ' + t('otherSituation')}`
+            }],
+            max_tokens: 100,
+            temperature: 0.7
+        };
+        
+        console.log('發送請求到OpenAI API...');
+        
         const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`
             },
-            body: JSON.stringify({
-                model: 'gpt-4o-mini',
-                messages: [{
-                    role: 'user',
-                    content: `根據以下情境提供5個${currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : '中文'}情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
-                    情境：${context}
-                    範例輸出：${currentLanguage === 'en' ? 'Anxiety Sadness Loneliness Stress Joy ' + t('otherSituation') : 
-                              currentLanguage === 'ja' ? '不安 悲しみ 孤独 ストレス 喜び ' + t('otherSituation') : 
-                              currentLanguage === 'ko' ? '불안 슬픔 외로움 스트레스 기쁨 ' + t('otherSituation') : 
-                              '焦慮 悲傷 孤獨 壓力 喜樂 ' + t('otherSituation')}`
-                }],
-                max_tokens: 100,
-                temperature: 0.7
-            })
+            body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {
@@ -320,28 +327,35 @@ async function getEmotionalVerse(emotion) {
         verseElement.innerHTML = t('loadingVerse');
         verseElement.classList.add('loading-verse');
         
+        console.log('獲取經文，使用API金鑰，金鑰長度:', apiKey ? apiKey.length : 0);
+        console.log('API金鑰前10個字符:', apiKey ? apiKey.substring(0, 10) + '...' : 'undefined');
+        
+        const requestBody = {
+            model: 'gpt-4o-mini',
+            messages: [{ 
+                role: 'user',
+                content: `請針對「${emotion}」情緒：
+                1. 提供合適聖經經文(格式：『經文』書名 章:節)${currentLanguage === 'en' || currentLanguage === 'ja' || currentLanguage === 'ko' ? '只需' + (currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : '韓文') : '同時提出中英文'}
+                2. 簡明的解說，50字內，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
+                3. 禱告詞，你是一個資深慈愛的牧師，同情用戶的狀態，深情地為用戶禱告，為用戶設身處地思考，祈求上帝給用戶安慰和力量，用華麗的辭藻，用詩歌般的語言，用最真摯的情感，寫出最感人的禱告詞，激發用戶的感受，讓靈性灌注與降臨，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
+                請用以下格式回應：
+                【${t('scripture').replace('：', '')}】{內容}
+                【${t('explanation').replace('：', '')}】{解說}
+                【${t('prayer').replace('：', '')}】{禱告詞}`
+            }],
+            max_tokens: 300,
+            temperature: 0.8
+        };
+        
+        console.log('發送請求到OpenAI API獲取經文...');
+        
         const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`
             },
-            body: JSON.stringify({
-                model: 'gpt-4o-mini',
-                messages: [{ 
-                    role: 'user',
-                    content: `請針對「${emotion}」情緒：
-                    1. 提供合適聖經經文(格式：『經文』書名 章:節)${currentLanguage === 'en' || currentLanguage === 'ja' || currentLanguage === 'ko' ? '只需' + (currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : '韓文') : '同時提出中英文'}
-                    2. 簡明的解說，50字內，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
-                    3. 禱告詞，你是一個資深慈愛的牧師，同情用戶的狀態，深情地為用戶禱告，為用戶設身處地思考，祈求上帝給用戶安慰和力量，用華麗的辭藻，用詩歌般的語言，用最真摯的情感，寫出最感人的禱告詞，激發用戶的感受，讓靈性灌注與降臨，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
-                    請用以下格式回應：
-                    【${t('scripture').replace('：', '')}】{內容}
-                    【${t('explanation').replace('：', '')}】{解說}
-                    【${t('prayer').replace('：', '')}】{禱告詞}`
-                }],
-                max_tokens: 300,
-                temperature: 0.8
-            })
+            body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {
@@ -440,6 +454,20 @@ async function playPrayer(encodedText) {
         spinner.style.display = 'inline';
         
         const text = decodeURIComponent(encodedText);
+        
+        console.log('生成音頻，使用API金鑰，金鑰長度:', apiKey ? apiKey.length : 0);
+        console.log('API金鑰前10個字符:', apiKey ? apiKey.substring(0, 10) + '...' : 'undefined');
+        console.log('使用語音模型:', selectedVoice);
+        
+        const requestBody = {
+            model: "tts-1",
+            voice: selectedVoice,
+            input: text.substring(0, 50) + '...', // 只記錄前50個字符，避免日誌過長
+            response_format: "mp3"
+        };
+        
+        console.log('發送請求到OpenAI API生成音頻...');
+        
         const response = await fetch('https://api.openai.com/v1/audio/speech', {
             method: 'POST',
             headers: {
@@ -454,6 +482,12 @@ async function playPrayer(encodedText) {
                 response_format: "mp3"
             })
         });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('音頻生成錯誤:', response.status, errorText);
+            throw new Error(`音頻生成錯誤: ${response.status}`);
+        }
 
         const audioBlob = await response.blob();
         const audioUrl = URL.createObjectURL(new Blob([audioBlob], { type: 'audio/mpeg' }));
