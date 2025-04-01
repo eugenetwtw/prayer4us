@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "next build && next export",
+  "buildCommand": "next build",
   "outputDirectory": "out",
   "framework": "nextjs",
   "routes": [
