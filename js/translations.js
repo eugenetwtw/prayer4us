@@ -25,7 +25,7 @@ const translations = {
         shimmer: 'Shimmer (明亮)',
         apiKeyNotSet: '❌ API金鑰未設置，無法獲取經文',
         errorGettingVerse: '❌ 獲取經文時出錯，請稍後再試',
-        audioPlayError: '無法播放音頻，請稍後再試',
+        audioPlayError: '音頻功能暫時停用，我們正在進行系統維護',
         parseError: '⚠️ 未能解析回應，以下是原始內容：',
         apiKeyNotSetAudio: 'API金鑰未設置，無法播放音頻',
         languageSelector: '語言Language'
@@ -55,7 +55,7 @@ const translations = {
         shimmer: 'Shimmer (明亮)',
         apiKeyNotSet: '❌ API密钥未设置，无法获取经文',
         errorGettingVerse: '❌ 获取经文时出错，请稍后再试',
-        audioPlayError: '无法播放音频，请稍后再试',
+        audioPlayError: '音频功能暂时停用，我们正在进行系统维护',
         parseError: '⚠️ 未能解析响应，以下是原始内容：',
         apiKeyNotSetAudio: 'API密钥未设置，无法播放音频',
         languageSelector: '语言Language'
@@ -85,7 +85,7 @@ const translations = {
         shimmer: 'Shimmer (Bright)',
         apiKeyNotSet: '❌ API key not set, cannot retrieve scripture',
         errorGettingVerse: '❌ Error getting scripture, please try again later',
-        audioPlayError: 'Cannot play audio, please try again later',
+        audioPlayError: 'Audio feature temporarily disabled for system maintenance',
         parseError: '⚠️ Could not parse response, here is the original content:',
         apiKeyNotSetAudio: 'API key not set, cannot play audio',
         languageSelector: 'Language语言'
@@ -115,7 +115,7 @@ const translations = {
         shimmer: 'Shimmer (明るい)',
         apiKeyNotSet: '❌ APIキーが設定されていません、聖書の言葉を取得できません',
         errorGettingVerse: '❌ 聖書の言葉の取得中にエラーが発生しました、後でもう一度お試しください',
-        audioPlayError: '音声を再生できません、後でもう一度お試しください',
+        audioPlayError: '音声機能は現在システムメンテナンスのため一時的に無効になっています',
         parseError: '⚠️ 応答を解析できませんでした、以下は元のコンテンツです：',
         apiKeyNotSetAudio: 'APIキーが設定されていません、音声を再生できません',
         languageSelector: '言語Language'
@@ -145,7 +145,7 @@ const translations = {
         shimmer: 'Shimmer (밝은)',
         apiKeyNotSet: '❌ API 키가 설정되지 않았습니다. 성경 구절을 가져올 수 없습니다',
         errorGettingVerse: '❌ 성경 구절을 가져오는 중 오류가 발생했습니다. 나중에 다시 시도해 주세요',
-        audioPlayError: '오디오를 재생할 수 없습니다. 나중에 다시 시도해 주세요',
+        audioPlayError: '오디오 기능이 시스템 유지 보수를 위해 일시적으로 비활성화되었습니다',
         parseError: '⚠️ 응답을 분석할 수 없습니다. 다음은 원본 내용입니다:',
         apiKeyNotSetAudio: 'API 키가 설정되지 않았습니다. 오디오를 재생할 수 없습니다',
         languageSelector: '언어Language'

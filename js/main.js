@@ -521,7 +521,7 @@ async function playPrayer(encodedText) {
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         // 顯示提示訊息
-        alert(t('audioPlayError') + ' (暫時無法使用音頻功能)');
+        alert(t('audioPlayError'));
         
     } catch (error) {
         console.error('播放失敗:', error);
