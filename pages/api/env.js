@@ -21,14 +21,6 @@ export default function handler(req, res) {
   // Check if the environment variable exists
   const apiKey = process.env.OPENAI_API_KEY;
   
-  if (!apiKey) {
-    console.error('OPENAI_API_KEY environment variable is not set');
-    return res.status(500).json({ 
-      error: 'API key not configured',
-      apiKeyConfigured: false
-    });
-  }
-
   // For security, we don't return the actual API key to the client
   // Instead, we'll make the API requests server-side
   // We just return a flag indicating that the API key is configured

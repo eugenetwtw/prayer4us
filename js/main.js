@@ -104,6 +104,21 @@ function createLanguageSelector() {
 
 // 用API生成情緒列表
 async function generateEmotions(context) {
+    // 臨時解決方案：始終使用備用情緒列表
+    console.log('使用備用情緒列表');
+    
+    // 根據語言返回不同的備用情緒列表
+    const fallbackEmotions = {
+        'zh-Hant': ['焦慮', '悲傷', '孤獨', '壓力', '喜樂', t('otherSituation')],
+        'zh-Hans': ['焦虑', '悲伤', '孤独', '压力', '喜乐', t('otherSituation')],
+        'en': ['Anxiety', 'Sadness', 'Loneliness', 'Stress', 'Joy', t('otherSituation')],
+        'ja': ['不安', '悲しみ', '孤独', 'ストレス', '喜び', t('otherSituation')],
+        'ko': ['불안', '슬픔', '외로움', '스트레스', '기쁨', t('otherSituation')]
+    };
+    
+    return fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
+    
+    /* 原始代碼，暫時注釋掉
     if (!apiConfigured) {
         console.warn('API金鑰未配置，使用備用情緒列表');
         
@@ -170,6 +185,7 @@ async function generateEmotions(context) {
         
         return fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
     }
+    */
 }
 
 // 創建動態按鈕
@@ -309,8 +325,92 @@ function showPreviousEmotions() {
 
 // 修改後的獲取經文函數
 async function getEmotionalVerse(emotion) {
+    // 顯示加載中
+    const verseContainer = document.getElementById('verse');
+    verseContainer.innerHTML = t('loadingVerse');
+    verseContainer.classList.add('loading-verse');
+    
+    // 延遲一下，模擬加載過程
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // 使用備用經文
+    const formatText = (text) => text.replace(/\n/g, '<br>');
+    
+    // 根據語言和情緒選擇不同的備用經文
+    let scripture, explanation, prayer;
+    
+    if (currentLanguage === 'en') {
+        scripture = "\"Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God. And the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus.\" Philippians 4:6-7";
+        explanation = "God invites us to bring our worries to Him through prayer, promising a peace that defies human understanding.";
+        prayer = "Heavenly Father, I come before You with the weight of my emotions. You see my heart and know my struggles. Grant me Your perfect peace that surpasses all understanding. Help me to trust in Your timing and Your plan. Fill me with Your strength when I am weak, and remind me of Your constant presence. Thank You for Your unfailing love and care. In Jesus' name, Amen.";
+    } else if (currentLanguage === 'zh-Hans') {
+        scripture = "「应当一无挂虑，只要凡事借着祷告、祈求和感谢，将你们所要的告诉神。神所赐出人意外的平安，必在基督耶稣里，保守你们的心怀意念。」腓立比书 4:6-7";
+        explanation = "神邀请我们通过祷告将忧虑带到祂面前，应许赐下超越人类理解的平安。";
+        prayer = "天父，我带着我的情绪重担来到你面前。你看透我的心，知道我的挣扎。求你赐给我那超越理解的完美平安。帮助我信靠你的时间和计划。当我软弱时，用你的力量充满我，提醒我你始终与我同在。感谢你不变的爱和关怀。奉耶稣的名祷告，阿们。";
+    } else if (currentLanguage === 'ja') {
+        scripture = "「何も思い煩わないで、あらゆる場合に、感謝をもってささげる祈りと願いによって、あなたがたの願い事を神に知っていただきなさい。そうすれば、人のすべての考えにまさる神の平安が、あなたがたの心と思いをキリスト・イエスにあって守ってくれます。」ピリピ人への手紙 4:6-7";
+        explanation = "神様は私たちが祈りを通して心配事を持ってくるよう招いておられ、人間の理解を超える平安を約束されています。";
+        prayer = "天の父よ、私は感情の重荷を抱えてあなたの前に来ました。あなたは私の心をご覧になり、私の苦しみをご存知です。すべての理解を超えるあなたの完全な平安を与えてください。あなたのタイミングとご計画を信頼できるよう助けてください。私が弱い時、あなたの力で満たし、あなたの絶え間ない存在を思い出させてください。あなたの変わらぬ愛と配慮に感謝します。イエスの御名によって、アーメン。";
+    } else if (currentLanguage === 'ko') {
+        scripture = "\"아무 것도 염려하지 말고 다만 모든 일에 기도와 간구로, 너희 구할 것을 감사함으로 하나님께 아뢰라. 그리하면 모든 지각에 뛰어난 하나님의 평강이 그리스도 예수 안에서 너희 마음과 생각을 지키시리라.\" 빌립보서 4:6-7";
+        explanation = "하나님은 우리가 기도를 통해 걱정을 그분께 가져오도록 초대하시며, 인간의 이해를 초월하는 평안을 약속하십니다.";
+        prayer = "하늘에 계신 아버지, 저는 제 감정의 무게를 안고 당신 앞에 섭니다. 당신은 제 마음을 보시고 제 고통을 아십니다. 모든 이해를 초월하는 당신의 완전한 평안을 저에게 허락하소서. 당신의 때와 계획을 신뢰할 수 있도록 도와주소서. 제가 약할 때 당신의 힘으로 채워주시고, 당신의 지속적인 존재를 상기시켜 주소서. 당신의 변함없는 사랑과 돌봄에 감사드립니다. 예수님의 이름으로 기도합니다, 아멘.";
+    } else {
+        scripture = "「應當一無掛慮，只要凡事藉著禱告、祈求和感謝，將你們所要的告訴神。神所賜出人意外的平安，必在基督耶穌裡，保守你們的心懷意念。」腓立比書 4:6-7";
+        explanation = "神邀請我們透過禱告將憂慮帶到祂面前，應許賜下超越人類理解的平安。";
+        prayer = "天父，我帶著我的情緒重擔來到你面前。你看透我的心，知道我的掙扎。求你賜給我那超越理解的完美平安。幫助我信靠你的時間和計劃。當我軟弱時，用你的力量充滿我，提醒我你始終與我同在。感謝你不變的愛和關懷。奉耶穌的名禱告，阿們。";
+    }
+    
+    const prayerText = prayer;
+    
+    const verseElement = document.getElementById('verse');
+    verseElement.classList.remove('loading-verse');
+    verseElement.innerHTML = `
+        <div style="text-align: left; max-width: 600px; margin: 20px auto;">
+            <h3 style="color: #2c3e50;">${t('verseForEmotion', { emotion })}</h3>
+            <p style="font-size: 1.1em;">
+                <strong>${t('scripture')}</strong><br>
+                ${formatText(scripture)}
+            </p>
+            <p style="color: #27ae60; margin-top: 20px;">
+                <strong>${t('explanation')}</strong><br>
+                ${formatText(explanation)}
+            </p>
+            <div id="audio-player" style="margin: 15px 0;">
+                <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                    <button onclick="playPrayer('${encodeURIComponent(prayerText)}')" id="play-button">
+                        <span id="play-text">${t('playPrayer')}</span>
+                        <span id="loading-spinner" style="display: none;">${t('generatingAudio')}</span>
+                    </button>
+                    <div style="margin-left: 15px; display: flex; align-items: center;">
+                        <span id="voice-selector-label" style="margin-right: 5px;">${t('voiceSelector')}:</span>
+                        <select id="voice-selector" style="padding: 5px; border-radius: 5px;">
+                            <option value="alloy">${t('alloy')}</option>
+                            <option value="echo">${t('echo')}</option>
+                            <option value="fable">${t('fable')}</option>
+                            <option value="onyx">${t('onyx')}</option>
+                            <option value="nova">${t('nova')}</option>
+                            <option value="shimmer">${t('shimmer')}</option>
+                        </select>
+                    </div>
+                </div>
+                <audio id="prayer-audio" controls style="display: none; margin-top: 10px; width: 100%;"></audio>
+            </div>
+            <p style="color: #2980b9; margin-top: 20px; line-height: 1.6;">
+                <strong>${t('prayer')}</strong><br>
+                ${formatText(prayerText)}
+            </p>
+        </div>
+    `;
+    
+    /* 原始代碼，暫時注釋掉
     if (!apiConfigured) {
-        document.getElementById('verse').innerHTML = t('apiKeyNotSet');
+        document.getElementById('verse').innerHTML = t('loadingVerse');
+        document.getElementById('verse').classList.add('loading-verse');
+        setTimeout(() => {
+            document.getElementById('verse').innerHTML = t('errorGettingVerse');
+            document.getElementById('verse').classList.remove('loading-verse');
+        }, 1000);
         return;
     }
     
@@ -401,10 +501,38 @@ async function getEmotionalVerse(emotion) {
         verseElement.classList.remove('loading-verse');
         verseElement.innerHTML = t('errorGettingVerse');
     }
+    */
 }
 
 // 修改playPrayer函數
 async function playPrayer(encodedText) {
+    const button = document.getElementById('play-button');
+    const spinner = document.getElementById('loading-spinner');
+    const playText = document.getElementById('play-text');
+    const voiceSelector = document.getElementById('voice-selector');
+    const selectedVoice = voiceSelector ? voiceSelector.value : 'alloy';
+    
+    try {
+        button.disabled = true;
+        playText.style.display = 'none';
+        spinner.style.display = 'inline';
+        
+        // 模擬加載過程
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // 顯示提示訊息
+        alert(t('audioPlayError') + ' (暫時無法使用音頻功能)');
+        
+    } catch (error) {
+        console.error('播放失敗:', error);
+        alert(t('audioPlayError'));
+    } finally {
+        button.disabled = false;
+        playText.style.display = 'inline';
+        spinner.style.display = 'none';
+    }
+    
+    /* 原始代碼，暫時注釋掉
     if (!apiConfigured) {
         alert(t('apiKeyNotSetAudio'));
         return;
@@ -465,6 +593,7 @@ async function playPrayer(encodedText) {
         playText.style.display = 'inline';
         spinner.style.display = 'none';
     }
+    */
 }
 
 // 初始化按鈕
