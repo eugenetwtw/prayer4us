@@ -6,13 +6,6 @@ window.ENV = window.ENV || {};
 
 // 檢查API配置函數
 async function checkApiConfig() {
-  // 臨時解決方案：始終返回 true，以便網站可以正常運行
-  // 這樣可以使用備用情緒列表而不是直接調用 OpenAI API
-  window.ENV.apiKeyConfigured = true;
-  return true;
-  
-  /* 
-  // 原始代碼，暫時注釋掉
   // 如果已經設置了環境變數，直接返回
   if (window.ENV.apiKeyConfigured !== undefined) {
     return window.ENV.apiKeyConfigured;
@@ -71,7 +64,6 @@ async function checkApiConfig() {
     window.ENV.apiKeyConfigured = !!window.ENV.OPENAI_API_KEY;
     return window.ENV.apiKeyConfigured;
   }
-  */
 }
 
 // 導出函數
