@@ -1,32 +1,13 @@
-// 獲取API金鑰
-let apiKey = '';
+// Global state
 let currentLanguage = '';
-
-// 從環境變數中獲取API金鑰
-async function loadApiKey() {
-    try {
-        // 使用 env-config.js 中的 getApiKey 函數
-        apiKey = await window.getApiKey();
-        if (!apiKey) {
-            // API金鑰未設置
-            apiKey = ''; // 設置為空字符串，將使用備用情緒列表
-        }
-    } catch (error) {
-        // 無法載入環境變數
-        apiKey = ''; // 設置為空字符串，將使用備用情緒列表
-    }
-    
-    // 獲取當前語言
-    currentLanguage = getCurrentLanguage();
-}
-
 let emotionHistory = []; // 用於記錄情緒列表歷史
 let usedEmotions = new Set(); // 記錄已使用過的情緒
 let otherSituationClickCount = 0; // 追蹤「我有其他狀況」按鈕點擊次數
 
 // 初始化獲取首頁情緒
 async function initEmotions() {
-    await loadApiKey();
+    // 獲取當前語言
+    currentLanguage = getCurrentLanguage();
     
     // 創建語言選擇器
     createLanguageSelector();
@@ -101,31 +82,17 @@ function createLanguageSelector() {
     document.body.appendChild(langContainer);
 }
 
-// 用API生成情緒列表
+// 用API生成情緒列表 (via backend proxy)
 async function generateEmotions(context) {
-    if (!apiKey) {
-        // API金鑰未設置，使用備用情緒列表
-        
-        // 根據語言返回不同的備用情緒列表
-        const fallbackEmotions = {
-            'zh-Hant': ['焦慮', '悲傷', '孤獨', '壓力', '喜樂', t('otherSituation')],
-            'zh-Hans': ['焦虑', '悲伤', '孤独', '压力', '喜乐', t('otherSituation')],
-            'en': ['Anxiety', 'Sadness', 'Loneliness', 'Stress', 'Joy', t('otherSituation')],
-            'ja': ['不安', '悲しみ', '孤独', 'ストレス', '喜び', t('otherSituation')],
-            'ko': ['불안', '슬픔', '외로움', '스트레스', '기쁨', t('otherSituation')]
-        };
-        
-        return fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
-    }
-    
     try {
-        const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
+        // Call our backend proxy endpoint
+        const response = await fetch(`/api/openai`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
+                'X-Action': 'chat' // Specify the action for the proxy
             },
-            body: JSON.stringify({
+            body: JSON.stringify({ // Send the original payload
                 model: 'gpt-3.5-turbo',
                 messages: [{
                     role: 'user',
@@ -142,7 +109,9 @@ async function generateEmotions(context) {
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json();
+            console.error("Proxy API Error:", errorData);
+            throw new Error(`Proxy API error! status: ${response.status} - ${errorData.error || 'Unknown error'}`);
         }
 
         const data = await response.json();
@@ -157,10 +126,16 @@ async function generateEmotions(context) {
         const newEmotions = emotions.filter(e => !usedEmotions.has(e));
         newEmotions.forEach(e => usedEmotions.add(e));
         
-        return newEmotions.slice(0, 5).concat(t('otherSituation'));
+        // Ensure the last element is always 'otherSituation'
+        let finalEmotions = newEmotions.slice(0, 5);
+        if (!finalEmotions.includes(t('otherSituation'))) {
+            finalEmotions.push(t('otherSituation'));
+        }
+        return finalEmotions;
+
     } catch (error) {
-        // 獲取情緒列表失敗
-        // 根據語言返回不同的備用情緒列表
+        console.error("Error generating emotions:", error);
+        // Fallback if API call fails
         const fallbackEmotions = {
             'zh-Hant': ['焦慮', '悲傷', '孤獨', '壓力', '喜樂', t('otherSituation')],
             'zh-Hans': ['焦虑', '悲伤', '孤独', '压力', '喜乐', t('otherSituation')],
@@ -168,7 +143,6 @@ async function generateEmotions(context) {
             'ja': ['不安', '悲しみ', '孤独', 'ストレス', '喜び', t('otherSituation')],
             'ko': ['불안', '슬픔', '외로움', '스트레스', '기쁨', t('otherSituation')]
         };
-        
         return fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
     }
 }
@@ -308,25 +282,21 @@ function showPreviousEmotions() {
     }
 }
 
-// 修改後的獲取經文函數
+// 修改後的獲取經文函數 (via backend proxy)
 async function getEmotionalVerse(emotion) {
-    if (!apiKey) {
-        document.getElementById('verse').innerHTML = t('apiKeyNotSet');
-        return;
-    }
-    
     try {
         const verseElement = document.getElementById('verse');
         verseElement.innerHTML = t('loadingVerse');
         verseElement.classList.add('loading-verse');
         
-        const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
+        // Call our backend proxy endpoint
+        const response = await fetch(`/api/openai`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
+                'X-Action': 'chat' // Specify the action for the proxy
             },
-            body: JSON.stringify({
+            body: JSON.stringify({ // Send the original payload
                 model: 'gpt-3.5-turbo',
                 messages: [{ 
                     role: 'user',
@@ -345,7 +315,9 @@ async function getEmotionalVerse(emotion) {
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json();
+            console.error("Proxy API Error:", errorData);
+            throw new Error(`Proxy API error! status: ${response.status} - ${errorData.error || 'Unknown error'}`);
         }
 
         const data = await response.json();
@@ -417,17 +389,12 @@ async function getEmotionalVerse(emotion) {
         // 錯誤發生
         const verseElement = document.getElementById('verse');
         verseElement.classList.remove('loading-verse');
-        verseElement.innerHTML = t('errorGettingVerse');
+        verseElement.innerHTML = t('errorGettingVerse') + `: ${error.message}`; // Show error details
     }
 }
 
-// 修改playPrayer函數
+// 修改playPrayer函數 (via backend proxy)
 async function playPrayer(encodedText) {
-    if (!apiKey) {
-        alert(t('apiKeyNotSetAudio'));
-        return;
-    }
-    
     const button = document.getElementById('play-button');
     const spinner = document.getElementById('loading-spinner');
     const playText = document.getElementById('play-text');
@@ -440,14 +407,14 @@ async function playPrayer(encodedText) {
         spinner.style.display = 'inline';
         
         const text = decodeURIComponent(encodedText);
-        const response = await fetch('https://api.openai.com/v1/audio/speech', {
+        // Call our backend proxy endpoint
+        const response = await fetch('/api/openai', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json',
-                'Accept': 'audio/mpeg'
+                'X-Action': 'speech' // Specify the action for the proxy
             },
-            body: JSON.stringify({
+            body: JSON.stringify({ // Send the original payload
                 model: "tts-1",
                 voice: selectedVoice,
                 input: text,
@@ -455,15 +422,29 @@ async function playPrayer(encodedText) {
             })
         });
 
+        if (!response.ok) {
+            // Try to get error details if possible
+            let errorDetails = '';
+            try {
+                const errorData = await response.json(); // Might fail if response isn't JSON
+                errorDetails = errorData.error || errorData.details || response.statusText;
+            } catch (e) {
+                errorDetails = response.statusText;
+            }
+            console.error("Proxy API Error (Speech):", response.status, errorDetails);
+            throw new Error(`Proxy API error! status: ${response.status} - ${errorDetails}`);
+        }
+
         const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(new Blob([audioBlob], { type: 'audio/mpeg' }));
+        // Ensure the blob type is correct
+        const audioUrl = URL.createObjectURL(new Blob([audioBlob], { type: 'audio/mpeg' })); 
         const audioElement = document.getElementById('prayer-audio');
         audioElement.src = audioUrl;
         audioElement.style.display = 'block';
         audioElement.play();
     } catch (error) {
-        // 播放失敗
-        alert(t('audioPlayError'));
+        console.error("Error playing prayer audio:", error);
+        alert(t('audioPlayError') + `: ${error.message}`); // Show error details
     } finally {
         button.disabled = false;
         playText.style.display = 'inline';
