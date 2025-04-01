@@ -20,8 +20,9 @@ async function checkApiConfig() {
     try {
       console.log('正在從 Next.js API 路由檢查環境變數...');
       
-      // 使用完整的 URL 路徑
-      const apiUrl = `${window.location.origin}/api/env`;
+      // 使用完整的 URL 路徑，添加時間戳防止緩存
+      const timestamp = new Date().getTime();
+      const apiUrl = `${window.location.origin}/api/env?t=${timestamp}`;
       console.log('API URL:', apiUrl);
       
       // 嘗試從 Next.js API 路由獲取環境變數配置狀態

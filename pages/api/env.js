@@ -25,6 +25,6 @@ export default function handler(req, res) {
   // Instead, we'll make the API requests server-side
   // We just return a flag indicating that the API key is configured
   res.status(200).json({
-    apiKeyConfigured: true
+    apiKeyConfigured: !!apiKey
   });
 }
