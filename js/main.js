@@ -8,11 +8,11 @@ async function loadApiKey() {
         // 使用 env-config.js 中的 getApiKey 函數
         apiKey = await window.getApiKey();
         if (!apiKey) {
-            // API金鑰未設置
+            console.error('API金鑰未設置');
             apiKey = ''; // 設置為空字符串，將使用備用情緒列表
         }
     } catch (error) {
-        // 無法載入環境變數
+        console.error('無法載入環境變數:', error);
         apiKey = ''; // 設置為空字符串，將使用備用情緒列表
     }
     
@@ -104,7 +104,7 @@ function createLanguageSelector() {
 // 用API生成情緒列表
 async function generateEmotions(context) {
     if (!apiKey) {
-        // API金鑰未設置，使用備用情緒列表
+        console.warn('API金鑰未設置，使用備用情緒列表');
         
         // 根據語言返回不同的備用情緒列表
         const fallbackEmotions = {
@@ -159,7 +159,7 @@ async function generateEmotions(context) {
         
         return newEmotions.slice(0, 5).concat(t('otherSituation'));
     } catch (error) {
-        // 獲取情緒列表失敗
+        console.error('獲取情緒列表失敗:', error);
         // 根據語言返回不同的備用情緒列表
         const fallbackEmotions = {
             'zh-Hant': ['焦慮', '悲傷', '孤獨', '壓力', '喜樂', t('otherSituation')],
@@ -327,11 +327,11 @@ async function getEmotionalVerse(emotion) {
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'gpt-4.5',
+                model: 'gpt-4o-mini',
                 messages: [{ 
                     role: 'user',
                     content: `請針對「${emotion}」情緒：
-                    1. 提供合適聖經經文，繁體中文時選用和合本的中譯聖經(格式：『經文』書名 章:節)${currentLanguage === 'en' || currentLanguage === 'ja' || currentLanguage === 'ko' ? '只需' + (currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : '韓文') : '同時提出中英文'}
+                    1. 提供合適聖經經文(格式：『經文』書名 章:節)${currentLanguage === 'en' || currentLanguage === 'ja' || currentLanguage === 'ko' ? '只需' + (currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : '韓文') : '同時提出中英文'}
                     2. 簡明的解說，50字內，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
                     3. 禱告詞，你是一個資深慈愛的牧師，同情用戶的狀態，深情地為用戶禱告，為用戶設身處地思考，祈求上帝給用戶安慰和力量，用華麗的辭藻，用詩歌般的語言，用最真摯的情感，寫出最感人的禱告詞，激發用戶的感受，讓靈性灌注與降臨，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
                     請用以下格式回應：
@@ -414,7 +414,7 @@ async function getEmotionalVerse(emotion) {
             verseElement.innerHTML = `${t('parseError')}<br>${responseText}`;
         }
     } catch (error) {
-        // 錯誤發生
+        console.error('錯誤：', error);
         const verseElement = document.getElementById('verse');
         verseElement.classList.remove('loading-verse');
         verseElement.innerHTML = t('errorGettingVerse');
@@ -462,7 +462,7 @@ async function playPrayer(encodedText) {
         audioElement.style.display = 'block';
         audioElement.play();
     } catch (error) {
-        // 播放失敗
+        console.error('播放失敗:', error);
         alert(t('audioPlayError'));
     } finally {
         button.disabled = false;
