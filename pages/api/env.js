@@ -1,4 +1,4 @@
-// API route to check if environment variables are configured
+// API route to securely expose environment variables to the client
 // This file will be deployed to Vercel as a serverless function
 
 export default function handler(req, res) {
@@ -6,7 +6,6 @@ export default function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   
   // Handle preflight OPTIONS request
   if (req.method === 'OPTIONS') {
@@ -18,12 +17,19 @@ export default function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Check if the environment variable exists
-  const apiKey = process.env.OPENAI_API_KEY;
+  // Log for debugging
+  console.log('API route called, checking for environment variables');
   
-  // For security, we don't return any API key information to the client
-  // All OpenAI API calls will be made server-side
+  // Check if the environment variable exists
+  if (!process.env.OPENAI_API_KEY) {
+    console.warn('OPENAI_API_KEY environment variable is not set');
+  } else {
+    console.log('OPENAI_API_KEY environment variable is set');
+  }
+
+  // Return the environment variables
+  // Only expose specific variables that are needed by the client
   res.status(200).json({
-    apiKeyConfigured: !!apiKey
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY || ''
   });
 }

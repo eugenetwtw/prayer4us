@@ -7,7 +7,7 @@
     "start": "npx http-server",
     "dev": "next dev",
     "build": "next build",
-    "vercel-build": "next build"
+    "vercel-build": "echo 'No build step'"
   },
   "engines": {
     "node": ">=14.x"

@@ -17,7 +17,15 @@ export default function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Log for debugging
+  console.log('API route called, checking for environment variables');
+  
   // Check if the environment variable exists
+  if (!process.env.OPENAI_API_KEY) {
+    console.warn('OPENAI_API_KEY environment variable is not set');
+  } else {
+    console.log('OPENAI_API_KEY environment variable is set');
+  }
 
   // Return the environment variables
   // Only expose specific variables that are needed by the client
