@@ -5,6 +5,8 @@ const nextConfig = {
   images: {
     domains: ['*'],
   },
+  // 啟用靜態導出 (Static Export)
+  output: 'export',
   // 配置環境變數
   env: {
     // 這裡的環境變數會在構建時被注入，不會暴露給客戶端
