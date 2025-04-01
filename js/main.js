@@ -5,12 +5,20 @@ let currentLanguage = '';
 // 檢查API配置
 async function checkApiConfiguration() {
     try {
-        // 使用 env-config.js 中的 checkApiConfig 函數
-        apiConfigured = await window.checkApiConfig();
-        if (!apiConfigured) {
-            console.error('API金鑰未配置');
+        // 檢查是否使用 file:// 協議
+        const isFileProtocol = window.location.protocol === 'file:';
+        
+        if (isFileProtocol) {
+            console.log('檢測到使用本地文件協議 (file://)，使用備用模式');
+            apiConfigured = false;
         } else {
-            console.log('API金鑰已配置');
+            // 使用 env-config.js 中的 checkApiConfig 函數
+            apiConfigured = await window.checkApiConfig();
+            if (!apiConfigured) {
+                console.error('API金鑰未配置');
+            } else {
+                console.log('API金鑰已配置');
+            }
         }
     } catch (error) {
         console.error('無法檢查API配置:', error);
@@ -312,9 +320,36 @@ async function getEmotionalVerse(emotion) {
     if (!apiConfigured) {
         document.getElementById('verse').innerHTML = t('loadingVerse');
         document.getElementById('verse').classList.add('loading-verse');
+        
+        // 使用本地備用經文
         setTimeout(() => {
-            document.getElementById('verse').innerHTML = t('errorGettingVerse');
-            document.getElementById('verse').classList.remove('loading-verse');
+            const verseElement = document.getElementById('verse');
+            verseElement.classList.remove('loading-verse');
+            
+            // 簡單的備用經文
+            const scripture = '詩篇34:18\n耶和華靠近傷心的人，拯救靈性痛悔的人。';
+            const explanation = '在我們困難的時刻，神並沒有遠離我們。相反，祂特別親近那些心靈破碎的人。祂了解我們的痛苦，並願意在我們的困境中安慰我們。';
+            const prayer = '慈愛的天父，在我困難的時刻，感謝祢與我同在。當我感到心碎時，請幫助我感受到祢的安慰和同在。求祢醫治我的傷痛，在黑暗中賜下盼望。奉耶穌的名禱告，阿們。';
+            
+            const formatText = (text) => text.replace(/\n/g, '<br>');
+            
+            verseElement.innerHTML = `
+                <div style="text-align: left; max-width: 600px; margin: 20px auto;">
+                    <h3 style="color: #2c3e50;">${t('verseForEmotion', { emotion })}</h3>
+                    <p style="font-size: 1.1em;">
+                        <strong>${t('scripture')}</strong><br>
+                        ${formatText(scripture)}
+                    </p>
+                    <p style="color: #27ae60; margin-top: 20px;">
+                        <strong>${t('explanation')}</strong><br>
+                        ${formatText(explanation)}
+                    </p>
+                    <p style="color: #2980b9; margin-top: 20px; line-height: 1.6;">
+                        <strong>${t('prayer')}</strong><br>
+                        ${formatText(prayer)}
+                    </p>
+                </div>
+            `;
         }, 1000);
         return;
     }

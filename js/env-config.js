@@ -16,7 +16,14 @@ async function checkApiConfig() {
                       window.location.hostname.includes('now.sh') ||
                       !window.location.hostname.includes('localhost');
   
-  if (isVercelEnv) {
+  // 檢查是否使用 file:// 協議
+  const isFileProtocol = window.location.protocol === 'file:';
+  
+  if (isFileProtocol) {
+    console.log('檢測到使用本地文件協議 (file://)，使用備用模式');
+    window.ENV.apiKeyConfigured = false;
+    return false;
+  } else if (isVercelEnv) {
     try {
       console.log('正在從 Next.js API 路由檢查環境變數...');
       
@@ -44,7 +51,8 @@ async function checkApiConfig() {
       const data = await response.json();
       console.log('API 回應:', data);
       
-      if (data.apiKeyConfigured) {
+      // 檢查是否有 OPENAI_API_KEY 或 apiKeyConfigured 屬性
+      if (data.OPENAI_API_KEY || data.apiKeyConfigured) {
         console.log('API金鑰已配置');
         window.ENV.apiKeyConfigured = true;
         return true;

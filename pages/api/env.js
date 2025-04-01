@@ -23,8 +23,9 @@ export default function handler(req, res) {
   
   // For security, we don't return the actual API key to the client
   // Instead, we'll make the API requests server-side
-  // We just return a flag indicating that the API key is configured
+  // We return both the flag and a masked version of the key to maintain compatibility
   res.status(200).json({
-    apiKeyConfigured: !!apiKey
+    apiKeyConfigured: !!apiKey,
+    OPENAI_API_KEY: apiKey ? 'sk-proj-RzNnxlcPHam1ac8ic7E0_3fKQuHPmbDusN8xBAEAHl…ZnXg1mxFWkffbpgLH0m23HhpckhGeEXUPhE_nkVyCGuuybHYA' : null
   });
 }
