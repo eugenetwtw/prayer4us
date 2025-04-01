@@ -21,11 +21,9 @@ export default function handler(req, res) {
   // Check if the environment variable exists
   const apiKey = process.env.OPENAI_API_KEY;
   
-  // For security, we don't return the actual API key to the client
-  // Instead, we'll make the API requests server-side
-  // We return both the flag and a masked version of the key to maintain compatibility
+  // For security, we don't return any API key information to the client
+  // All OpenAI API calls will be made server-side
   res.status(200).json({
-    apiKeyConfigured: !!apiKey,
-    OPENAI_API_KEY: apiKey ? 'sk-proj-RzNnxlcPHam1ac8ic7E0_3fKQuHPmbDusN8xBAEAHl…ZnXg1mxFWkffbpgLH0m23HhpckhGeEXUPhE_nkVyCGuuybHYA' : null
+    apiKeyConfigured: !!apiKey
   });
 }
