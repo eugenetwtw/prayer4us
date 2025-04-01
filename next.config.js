@@ -1,11 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
   reactStrictMode: true,
   // 允許從任何來源加載圖像
   images: {
     domains: ['*'],
-    unoptimized: true,
   },
   // 配置環境變數
   env: {
