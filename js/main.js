@@ -33,7 +33,7 @@ async function getEmotionalVerse(emotion) {
                     【${t('explanation').replace('：', '')}】{解說}
                     【${t('prayer').replace('：', '')}】{禱告詞}`
                 }],
-                max_tokens: 600,
+                max_tokens: 1000,
                 temperature: 0.8
             })
         });
