@@ -14,11 +14,10 @@ async function getEmotionalVerse(emotion) {
         verseElement.innerHTML = t('loadingVerse');
         verseElement.classList.add('loading-verse');
         
-        const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
+        const response = await fetch('/api/chat', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
@@ -232,11 +231,10 @@ async function generateEmotions(context) {
     }
     
     try {
-        const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
+        const response = await fetch('/api/chat', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
@@ -442,10 +440,9 @@ async function playPrayer(encodedText) {
         spinner.style.display = 'inline';
         
         const text = decodeURIComponent(encodedText);
-        const response = await fetch('https://api.openai.com/v1/audio/speech', {
+        const response = await fetch('/api/chat', {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json',
                 'Accept': 'audio/mpeg'
             },
