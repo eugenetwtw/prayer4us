@@ -2,6 +2,119 @@
 let apiKey = '';
 let currentLanguage = '';
 
+// 修改後的獲取經文函數
+async function getEmotionalVerse(emotion) {
+    if (!apiKey) {
+        document.getElementById('verse').innerHTML = t('apiKeyNotSet');
+        return;
+    }
+    
+    try {
+        const verseElement = document.getElementById('verse');
+        verseElement.innerHTML = t('loadingVerse');
+        verseElement.classList.add('loading-verse');
+        
+        const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [{ 
+                    role: 'user',
+                    content: `請針對「${emotion}」情緒：
+                    1. 提供合適聖經經文，若是中文，用聖經和合本(格式：『經文』書名 章:節)${currentLanguage === 'en' || currentLanguage === 'ja' || currentLanguage === 'ko' ? '只需' + (currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : '韓文') : '同時提出中英文'}
+                    2. 簡明的解說，150字內，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
+                    3. 禱告詞（500-600字，請寫得更詳細深入），你是一個資深慈愛的牧師，同情用戶的狀態，深情地為用戶禱告，為用戶設身處地思考，祈求上帝給用戶安慰和力量，用華麗的辭藻，用詩歌般的語言，用最真摯的情感，寫出最感人的禱告詞，激發用戶的感受，讓靈性灌注與降臨，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
+                    請用以下格式回應：
+                    【${t('scripture').replace('：', '')}】{內容}
+                    【${t('explanation').replace('：', '')}】{解說}
+                    【${t('prayer').replace('：', '')}】{禱告詞}`
+                }],
+                max_tokens: 2000,
+                temperature: 0.8
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (!data?.choices?.[0]?.message?.content) {
+            throw new Error('Invalid API response structure');
+        }
+
+        const responseText = data.choices[0].message.content.trim();
+        
+        // 使用多行匹配，根據當前語言調整匹配模式
+        const scriptureKey = t('scripture').replace('：', '');
+        const explanationKey = t('explanation').replace('：', '');
+        const prayerKey = t('prayer').replace('：', '');
+        
+        const verseMatch = responseText.match(new RegExp(`【${scriptureKey}】([\\s\\S]+?)\\n【${explanationKey}】`));
+        const comfortMatch = responseText.match(new RegExp(`【${explanationKey}】([\\s\\S]+?)\\n【${prayerKey}】`));
+        const prayerMatch = responseText.match(new RegExp(`【${prayerKey}】([\\s\\S]+)`));
+
+        if (verseMatch && comfortMatch && prayerMatch) {
+            const formatText = (text) => text.replace(/\n/g, '<br>');
+            const prayerText = prayerMatch[1].trim();
+            
+            const verseElement = document.getElementById('verse');
+            verseElement.classList.remove('loading-verse');
+            verseElement.innerHTML = `
+                <div style="text-align: left; max-width: 600px; margin: 20px auto;">
+                    <h3 style="color: #2c3e50;">${t('verseForEmotion', { emotion })}</h3>
+                    <p style="font-size: 1.1em;">
+                        <strong>${t('scripture')}</strong><br>
+                        ${formatText(verseMatch[1].trim())}
+                    </p>
+                    <p style="color: #27ae60; margin-top: 20px;">
+                        <strong>${t('explanation')}</strong><br>
+                        ${formatText(comfortMatch[1].trim())}
+                    </p>
+                    <div id="audio-player" style="margin: 15px 0;">
+                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                            <button onclick="playPrayer('${encodeURIComponent(prayerText)}')" id="play-button">
+                                <span id="play-text">${t('playPrayer')}</span>
+                                <span id="loading-spinner" style="display: none;">${t('generatingAudio')}</span>
+                            </button>
+                            <div style="margin-left: 15px; display: flex; align-items: center;">
+                                <span id="voice-selector-label" style="margin-right: 5px;">${t('voiceSelector')}:</span>
+                                <select id="voice-selector" style="padding: 5px; border-radius: 5px;">
+                                    <option value="alloy">${t('alloy')}</option>
+                                    <option value="echo">${t('echo')}</option>
+                                    <option value="fable">${t('fable')}</option>
+                                    <option value="onyx">${t('onyx')}</option>
+                                    <option value="nova">${t('nova')}</option>
+                                    <option value="shimmer">${t('shimmer')}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <audio id="prayer-audio" controls style="display: none; margin-top: 10px; width: 100%;"></audio>
+                    </div>
+                    <p style="color: #2980b9; margin-top: 20px; line-height: 1.6;">
+                        <strong>${t('prayer')}</strong><br>
+                        ${formatText(prayerText)}
+                    </p>
+                </div>
+            `;
+        } else {
+            const verseElement = document.getElementById('verse');
+            verseElement.classList.remove('loading-verse');
+            verseElement.innerHTML = `${t('parseError')}<br>${responseText}`;
+        }
+    } catch (error) {
+        console.error('錯誤：', error);
+        const verseElement = document.getElementById('verse');
+        verseElement.classList.remove('loading-verse');
+        verseElement.innerHTML = t('errorGettingVerse');
+    }
+}
+
 // 從環境變數中獲取API金鑰
 async function loadApiKey() {
     try {
@@ -308,118 +421,7 @@ function showPreviousEmotions() {
     }
 }
 
-// 修改後的獲取經文函數
-async function getEmotionalVerse(emotion) {
-    if (!apiKey) {
-        document.getElementById('verse').innerHTML = t('apiKeyNotSet');
-        return;
-    }
-    
-    try {
-        const verseElement = document.getElementById('verse');
-        verseElement.innerHTML = t('loadingVerse');
-        verseElement.classList.add('loading-verse');
-        
-        const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                model: 'gpt-4o-mini',
-                messages: [{ 
-                    role: 'user',
-                    content: `請針對「${emotion}」情緒：
-                    1. 提供合適聖經經文，若是中文，用聖經和合本(格式：『經文』書名 章:節)${currentLanguage === 'en' || currentLanguage === 'ja' || currentLanguage === 'ko' ? '只需' + (currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : '韓文') : '同時提出中英文'}
-                    2. 簡明的解說，300字內，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
-                    3. 禱告詞，你是一個資深慈愛的牧師，同情用戶的狀態，深情地為用戶禱告，為用戶設身處地思考，祈求上帝給用戶安慰和力量，用華麗的辭藻，用詩歌般的語言，用最真摯的情感，寫出最感人的禱告詞，激發用戶的感受，讓靈性灌注與降臨，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
-                    請用以下格式回應：
-                    【${t('scripture').replace('：', '')}】{內容}
-                    【${t('explanation').replace('：', '')}】{解說}
-                    【${t('prayer').replace('：', '')}】{禱告詞}`
-                }],
-                max_tokens: 1000,
-                temperature: 0.8
-            })
-        });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        
-        if (!data?.choices?.[0]?.message?.content) {
-            throw new Error('Invalid API response structure');
-        }
-
-        const responseText = data.choices[0].message.content.trim();
-        
-        // 使用多行匹配，根據當前語言調整匹配模式
-        const scriptureKey = t('scripture').replace('：', '');
-        const explanationKey = t('explanation').replace('：', '');
-        const prayerKey = t('prayer').replace('：', '');
-        
-        const verseMatch = responseText.match(new RegExp(`【${scriptureKey}】([\\s\\S]+?)\\n【${explanationKey}】`));
-        const comfortMatch = responseText.match(new RegExp(`【${explanationKey}】([\\s\\S]+?)\\n【${prayerKey}】`));
-        const prayerMatch = responseText.match(new RegExp(`【${prayerKey}】([\\s\\S]+)`));
-
-        if (verseMatch && comfortMatch && prayerMatch) {
-            const formatText = (text) => text.replace(/\n/g, '<br>');
-            const prayerText = prayerMatch[1].trim();
-            
-            const verseElement = document.getElementById('verse');
-            verseElement.classList.remove('loading-verse');
-            verseElement.innerHTML = `
-                <div style="text-align: left; max-width: 600px; margin: 20px auto;">
-                    <h3 style="color: #2c3e50;">${t('verseForEmotion', { emotion })}</h3>
-                    <p style="font-size: 1.1em;">
-                        <strong>${t('scripture')}</strong><br>
-                        ${formatText(verseMatch[1].trim())}
-                    </p>
-                    <p style="color: #27ae60; margin-top: 20px;">
-                        <strong>${t('explanation')}</strong><br>
-                        ${formatText(comfortMatch[1].trim())}
-                    </p>
-                    <div id="audio-player" style="margin: 15px 0;">
-                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                            <button onclick="playPrayer('${encodeURIComponent(prayerText)}')" id="play-button">
-                                <span id="play-text">${t('playPrayer')}</span>
-                                <span id="loading-spinner" style="display: none;">${t('generatingAudio')}</span>
-                            </button>
-                            <div style="margin-left: 15px; display: flex; align-items: center;">
-                                <span id="voice-selector-label" style="margin-right: 5px;">${t('voiceSelector')}:</span>
-                                <select id="voice-selector" style="padding: 5px; border-radius: 5px;">
-                                    <option value="alloy">${t('alloy')}</option>
-                                    <option value="echo">${t('echo')}</option>
-                                    <option value="fable">${t('fable')}</option>
-                                    <option value="onyx">${t('onyx')}</option>
-                                    <option value="nova">${t('nova')}</option>
-                                    <option value="shimmer">${t('shimmer')}</option>
-                                </select>
-                            </div>
-                        </div>
-                        <audio id="prayer-audio" controls style="display: none; margin-top: 10px; width: 100%;"></audio>
-                    </div>
-                    <p style="color: #2980b9; margin-top: 20px; line-height: 1.6;">
-                        <strong>${t('prayer')}</strong><br>
-                        ${formatText(prayerText)}
-                    </p>
-                </div>
-            `;
-        } else {
-            const verseElement = document.getElementById('verse');
-            verseElement.classList.remove('loading-verse');
-            verseElement.innerHTML = `${t('parseError')}<br>${responseText}`;
-        }
-    } catch (error) {
-        console.error('錯誤：', error);
-        const verseElement = document.getElementById('verse');
-        verseElement.classList.remove('loading-verse');
-        verseElement.innerHTML = t('errorGettingVerse');
-    }
-}
 
 // 修改playPrayer函數
 async function playPrayer(encodedText) {
