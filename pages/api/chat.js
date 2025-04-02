@@ -1,8 +1,6 @@
-import { NextResponse } from 'next/server'
-
-export async function POST(request) {
+export default async function handler(req, res) {
   try {
-    const { model, messages, max_tokens, temperature } = await request.json()
+    const { model, messages, max_tokens, temperature } = req.body
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -23,13 +21,12 @@ export async function POST(request) {
     }
 
     const data = await response.json()
-    return NextResponse.json(data)
+    return res.status(200).json(data)
     
   } catch (error) {
     console.error('API route error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Internal Server Error' },
-      { status: 500 }
-    )
+    return res.status(500).json({
+      error: error.message || 'Internal Server Error'
+    })
   }
 }
