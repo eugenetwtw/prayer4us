@@ -1,14 +1,10 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "outputDirectory": ".next",
-  "installCommand": "npm install",
-  "framework": "nextjs",
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/(.*)", "dest": "/" }
-  ],
-  "env": {
-    "OPENAI_API_KEY": "@openai_api_key"
-  }
+  "buildCommand": "",
+  "outputDirectory": "",
+  "installCommand": "",
+  "framework": null,
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/:path*" }
+  ]
 }
