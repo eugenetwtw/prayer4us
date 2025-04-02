@@ -4,14 +4,19 @@
 // 全局環境變數對象
 window.ENV = window.ENV || {};
 
-// 初始化環境變數
-async function initEnv() {
+// 獲取API金鑰函數
+async function getApiKey() {
+  // 如果已經設置了環境變數，直接返回
+  if (window.ENV.OPENAI_API_KEY) {
+    return window.ENV.OPENAI_API_KEY;
+  }
+  
   // 檢查是否在 Vercel 環境中
   const isVercelEnv = window.location.hostname.includes('vercel.app') || 
                       window.location.hostname.includes('now.sh') ||
                       !window.location.hostname.includes('localhost');
   
-  if (isVercelEnv && !window.ENV.OPENAI_API_KEY) {
+  if (isVercelEnv) {
     try {
       console.log('正在從 Next.js API 路由獲取環境變數...');
       
@@ -38,6 +43,7 @@ async function initEnv() {
       if (data.OPENAI_API_KEY) {
         console.log('成功從 API 獲取環境變數');
         window.ENV.OPENAI_API_KEY = data.OPENAI_API_KEY;
+        return data.OPENAI_API_KEY;
       } else {
         console.warn('API 回應中沒有 OPENAI_API_KEY');
       }
@@ -48,7 +54,10 @@ async function initEnv() {
   } else {
     console.log('在本地環境中，使用 .env.js 中的環境變數');
   }
+  
+  // 返回本地環境變數或空字符串
+  return window.ENV.OPENAI_API_KEY || '';
 }
 
-// 初始化環境變數
-initEnv();
+// 導出 getApiKey 函數
+window.getApiKey = getApiKey;
