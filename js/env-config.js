@@ -43,7 +43,7 @@ async function getApiKey() {
       if (data.OPENAI_API_KEY) {
         console.log('成功從 API 獲取環境變數');
         window.ENV.OPENAI_API_KEY = data.OPENAI_API_KEY;
-        return data.OPENAI_API_KEY;
+    //    return data.OPENAI_API_KEY;
       } else {
         console.warn('API 回應中沒有 OPENAI_API_KEY');
       }
