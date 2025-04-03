@@ -5,29 +5,13 @@
 window.ENV = window.ENV || {};
 
 // 獲取API金鑰函數
-//async function getApiKey() {
+async function getApiKey() {
   // 如果已經設置了環境變數，直接返回
-//  if (window.ENV.OPENAI_API_KEY) {
+  if (window.ENV.OPENAI_API_KEY) {
 //    return window.ENV.OPENAI_API_KEY;
-//  }
+  }
 
-//===
-async function init() {
-    const key = await getApiKey();
-    // Use key here
-}
-init();
-  async function getApiKey() {
-    return process.env.OPENAI_API_KEY; // Securely stored in server environment
-}
 
-// Client-side should call a backend endpoint instead
-async function getData() {
-    const response = await fetch('/api/get-openai-data');
-    // API key stays on server, never reaches client
-}
-//===
-  
   // 檢查是否在 Vercel 環境中
   const isVercelEnv = window.location.hostname.includes('vercel.app') || 
                       window.location.hostname.includes('now.sh') ||
