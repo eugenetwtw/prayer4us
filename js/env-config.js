@@ -8,7 +8,7 @@ window.ENV = window.ENV || {};
 async function getApiKey() {
   // 如果已經設置了環境變數，直接返回
   if (window.ENV.OPENAI_API_KEY) {
-//    return window.ENV.OPENAI_API_KEY;
+    return window.ENV.OPENAI_API_KEY;
   }
 
 
@@ -39,12 +39,12 @@ async function getApiKey() {
       }
       
       const data = await response.json();
-      console.log('API 回應:', data);
+    //  console.log('API 回應:', data);
       
       if (data.OPENAI_API_KEY) {
         console.log('成功從 API 獲取環境變數');
         window.ENV.OPENAI_API_KEY = data.OPENAI_API_KEY;
-    //    return data.OPENAI_API_KEY;
+        return data.OPENAI_API_KEY;
       } else {
         console.warn('API 回應中沒有 OPENAI_API_KEY');
       }
