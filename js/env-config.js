@@ -10,7 +10,13 @@ window.ENV = window.ENV || {};
 //  if (window.ENV.OPENAI_API_KEY) {
 //    return window.ENV.OPENAI_API_KEY;
 //  }
+
 //===
+async function init() {
+    const key = await getApiKey();
+    // Use key here
+}
+init();
   async function getApiKey() {
     return process.env.OPENAI_API_KEY; // Securely stored in server environment
 }
