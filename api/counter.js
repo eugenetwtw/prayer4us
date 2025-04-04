@@ -87,6 +87,7 @@ async function updateCounterData(data) {
 }
 
 export default async function handler(req, res) {
+  console.log(`[Counter API] Received request: ${req.method} ${req.url}`); // Added log
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -96,52 +97,68 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
+    return;
   }
 
+  console.log('[Counter API] Processing request...'); // Added log
   try {
     // Get current counter data
+    console.log('[Counter API] Fetching current counter data...'); // Added log
     let counterData = await getCounterData();
+    console.log('[Counter API] Current counter data fetched:', JSON.stringify(counterData)); // Added log
     
     if (req.method === 'POST') {
+      console.log('[Counter API] Processing POST request. Body:', req.body); // Added log
       const { action, language } = req.body;
       const validLanguages = ['zh-Hant', 'zh-Hans', 'en', 'ja', 'ko'];
       
       // Validate language
       if (!validLanguages.includes(language)) {
+        console.warn(`[Counter API] Invalid language received: ${language}`); // Added log
         return res.status(400).json({ error: 'Invalid language' });
       }
+      console.log(`[Counter API] Action: ${action}, Language: ${language}`); // Added log
 
       if (action === 'visit') {
+        console.log('[Counter API] Incrementing visit count...'); // Added log
         // Increment total visits
         counterData.total.visits += 1;
-        
         // Increment language-specific visits
         counterData.languages[language].visits += 1;
+        console.log('[Counter API] Visit count incremented.'); // Added log
       } else if (action === 'audio') {
+        console.log('[Counter API] Incrementing audio generation count...'); // Added log
         // Increment total audio generations
         counterData.total.audioGenerated += 1;
-        
         // Increment language-specific audio generations
         counterData.languages[language].audioGenerated += 1;
+        console.log('[Counter API] Audio generation count incremented.'); // Added log
       } else {
+        console.warn(`[Counter API] Invalid action received: ${action}`); // Added log
         return res.status(400).json({ error: 'Invalid action' });
       }
 
+      console.log('[Counter API] Updated counter data:', JSON.stringify(counterData)); // Added log
       // Save updated counter data
+      console.log('[Counter API] Attempting to update counter data in blob storage...'); // Added log
       const success = await updateCounterData(counterData);
       if (!success) {
+        console.error('[Counter API] Failed to update counter data in blob storage.'); // Added log
         return res.status(500).json({ error: 'Failed to update counter data' });
       }
+      console.log('[Counter API] Successfully updated counter data in blob storage.'); // Added log
 
       return res.status(200).json({ success: true, data: counterData });
     } else if (req.method === 'GET') {
+      console.log('[Counter API] Processing GET request.'); // Added log
       // Return counter data for GET requests
       return res.status(200).json(counterData);
     } else {
+      console.warn(`[Counter API] Method not allowed: ${req.method}`); // Added log
       return res.status(405).json({ error: 'Method not allowed' });
     }
   } catch (error) {
-    console.error('Counter API error:', error);
+    console.error('[Counter API] Error processing request:', error); // Modified log
     return res.status(500).json({ error: 'Internal server error', message: error.message });
   }
 }

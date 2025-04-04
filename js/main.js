@@ -113,10 +113,11 @@ async function recordAudioGeneration(language) {
         return;
     }
 
+    console.log(`[recordAudioGeneration] Attempting to record audio generation for language: ${language}`); // Added log
     try {
         // 打印 API URL 以便調試
         const apiUrl = `${window.location.origin}${counterApiPath}`; // Use counterApiPath directly
-        console.log('正在記錄音頻生成，API URL:', apiUrl);
+        console.log('[recordAudioGeneration] Sending POST request to:', apiUrl); // Added log
 
         const response = await fetch(apiUrl, {
             method: 'POST',
@@ -129,22 +130,24 @@ async function recordAudioGeneration(language) {
             })
         });
         
+        console.log(`[recordAudioGeneration] Received response status: ${response.status}`); // Added log
         if (!response.ok) {
-            console.warn(`無法記錄音頻生成，狀態碼: ${response.status}`);
+            console.warn(`[recordAudioGeneration] Failed to record audio generation. Status: ${response.status}`); // Modified log
             
             // 嘗試讀取錯誤詳情
             try {
                 const errorData = await response.json();
-                console.warn('錯誤詳情:', errorData);
+                console.warn('[recordAudioGeneration] Error details:', errorData); // Modified log
             } catch (e) {
                 // 可能無法解析為 JSON
-                console.warn('無法解析錯誤回應');
+                console.warn('[recordAudioGeneration] Could not parse error response.'); // Modified log
             }
         } else {
-            console.log('成功記錄音頻生成');
+            const responseData = await response.json(); // Added log
+            console.log('[recordAudioGeneration] Successfully recorded audio generation. Response data:', responseData); // Modified log
         }
     } catch (error) {
-        console.warn('記錄音頻生成時出錯:', error);
+        console.error('[recordAudioGeneration] Error during fetch:', error); // Modified log
         
         // 檢查是否為404錯誤，在本地開發中提供更有用的訊息
         if (error.message && error.message.includes('404')) {
