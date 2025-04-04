@@ -28,7 +28,7 @@ const translations = {
         audioPlayError: '無法播放音頻，請稍後再試',
         parseError: '⚠️ 未能解析回應，以下是原始內容：',
         apiKeyNotSetAudio: 'API金鑰未設置，無法播放音頻',
-        languageSelector: '語言Language'
+        languageSelector: 'Language 文'
     },
     // Simplified Chinese
     'zh-Hans': {
