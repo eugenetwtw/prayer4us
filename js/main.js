@@ -2,8 +2,11 @@
 let apiKey = '';
 let currentLanguage = '';
 
-// Counter API path - will be prefixed with window.location.origin
+// Counter API path - adjust according to your deployment structure
 const counterApiPath = '/api/counter';
+
+// Flag to disable counter functionality if the endpoint is not available
+let counterFunctionalityDisabled = false;
 
 // 檢測用戶瀏覽器語言並設置合適的語言
 function detectUserLanguage() {
@@ -56,6 +59,12 @@ function detectUserLanguage() {
 
 // 記錄訪問
 async function recordVisit(language) {
+    // 如果功能已被禁用，則直接返回
+    if (counterFunctionalityDisabled) {
+        console.log('計數器功能已被禁用，跳過訪問記錄');
+        return;
+    }
+
     try {
         // 打印 API URL 以便調試
         const apiUrl = `${window.location.origin}${counterApiPath}`;
@@ -98,6 +107,12 @@ async function recordVisit(language) {
 
 // 記錄音頻生成
 async function recordAudioGeneration(language) {
+    // 如果功能已被禁用，則直接返回
+    if (counterFunctionalityDisabled) {
+        console.log('計數器功能已被禁用，跳過音頻生成記錄');
+        return;
+    }
+
     try {
         // 打印 API URL 以便調試
         const apiUrl = `${window.location.origin}${counterApiPath}`;
@@ -781,5 +796,35 @@ async function playPrayer(encodedText, encodedInstructions = '') {
     }
 }
 
-// 初始化按鈕
-window.onload = initEmotions;
+// 檢查API端點是否可用，如果不可用，則禁用計數器功能
+async function checkCounterEndpoint() {
+    try {
+        // 如果進入此函數時功能已被禁用，則不再進行檢查
+        if (counterFunctionalityDisabled) return;
+        
+        // 嘗試呼叫API
+        const apiUrl = `${window.location.origin}${counterApiPath}`;
+        const response = await fetch(apiUrl, {
+            method: 'GET'
+        });
+        
+        if (!response.ok) {
+            console.warn(`計數器API不可用，狀態碼: ${response.status}，禁用計數器功能`);
+            counterFunctionalityDisabled = true;
+        } else {
+            console.log('計數器API可用');
+        }
+    } catch (error) {
+        console.warn('檢查計數器API時出錯:', error);
+        console.warn('禁用計數器功能');
+        counterFunctionalityDisabled = true;
+    }
+}
+
+// 初始化
+window.onload = async function() {
+    // 先檢查計數器API是否可用
+    await checkCounterEndpoint();
+    // 初始化情緒按鈕
+    await initEmotions();
+};
