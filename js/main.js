@@ -308,12 +308,56 @@ function showPreviousEmotions() {
     }
 }
 
-// 使用AI選擇最適合情緒的語音
-async function getVoiceForEmotion(emotion) {
+// 使用AI一次性選擇最適合情緒的語音和語音指令
+async function getVoiceAndInstructions(emotion, prayerText = '') {
     try {
         if (!apiKey) {
             console.warn('API金鑰未設置，使用默認語音Alloy');
-            return 'alloy';
+            return { voice: 'alloy', instructions: '' };
+        }
+        
+        // 定義給AI的內容，根據是否有禱告文調整提示
+        let content = '';
+        if (prayerText) {
+            // 如果有禱告文，生成音色選擇和語音指令
+            content = `基於用戶情緒「${emotion}」及以下禱告文，請執行兩項任務：
+
+1. 從以下六個OpenAI TTS語音中選擇最適合的一個：
+   - Alloy: 平衡的聲音，適合一般用途，提供清晰度和溫暖感
+   - Echo: 更動態的聲音，可以為通知增添興奮感
+   - Fable: 講故事的聲音，非常適合讀睡前故事或敘述內容
+   - Onyx: 深沉且豐富的聲音，適合權威性指令
+   - Nova: 明亮且歡快的聲音，適合友好的互動
+   - Shimmer: 柔和且舒緩的聲音，適合平靜的環境
+
+2. 為這段禱告文生成適合的TTS指令：
+"""
+${prayerText}
+"""
+
+請按照以下格式回答：
+
+VOICE: [選擇的語音名稱，小寫]
+
+INSTRUCTIONS:
+Voice Affect: [聲音情感描述]
+Tone: [語調描述]
+Pacing: [速度描述]
+Emotions: [情緒描述]
+Pronunciation: [發音重點描述]
+Pauses: [停頓描述]`;
+        } else {
+            // 如果沒有禱告文，只選擇音色
+            content = `基於用戶的情緒「${emotion}」，請從以下六個OpenAI TTS語音中選擇最適合的一個:
+Alloy: 平衡的聲音，適合一般用途，提供清晰度和溫暖感
+Echo: 更動態的聲音，可以為通知增添興奮感
+Fable: 講故事的聲音，非常適合讀睡前故事或敘述內容
+Onyx: 深沉且豐富的聲音，適合權威性指令
+Nova: 明亮且歡快的聲音，適合友好的互動
+Shimmer: 柔和且舒緩的聲音，適合平靜的環境
+
+請按照以下格式回答：
+VOICE: [選擇的語音名稱，小寫]`;
         }
         
         const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
@@ -326,18 +370,10 @@ async function getVoiceForEmotion(emotion) {
                 model: 'gpt-4o-mini',
                 messages: [{
                     role: 'user',
-                    content: `基於用戶的情緒「${emotion}」，請從以下六個OpenAI TTS語音中選擇最適合的一個:
-                    Alloy: 平衡的聲音，適合一般用途，提供清晰度和溫暖感
-                    Echo: 更動態的聲音，可以為通知增添興奮感
-                    Fable: 講故事的聲音，非常適合讀睡前故事或敘述內容
-                    Onyx: 深沉且豐富的聲音，適合權威性指令
-                    Nova: 明亮且歡快的聲音，適合友好的互動
-                    Shimmer: 柔和且舒緩的聲音，適合平靜的環境
-                    
-                    只回答一個語音名稱(小寫): alloy, echo, fable, onyx, nova, 或 shimmer。無需解釋理由。`
+                    content: content
                 }],
-                max_tokens: 20,
-                temperature: 0.3
+                max_tokens: prayerText ? 350 : 20,
+                temperature: 0.5
             })
         });
 
@@ -351,20 +387,37 @@ async function getVoiceForEmotion(emotion) {
             throw new Error('Invalid API response structure');
         }
 
-        // 獲取回應並清理
-        const voiceName = data.choices[0].message.content.trim().toLowerCase();
+        // 解析回應
+        const responseText = data.choices[0].message.content.trim();
         
-        // 確保回傳的是有效的語音選項
-        const validVoices = ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'];
-        if (validVoices.includes(voiceName)) {
-            return voiceName;
-        } else {
-            console.warn('API返回了無效的語音名稱:', voiceName);
-            return 'alloy'; // 默認使用alloy
+        // 提取語音名稱
+        const voiceMatch = responseText.match(/VOICE:\s*(\w+)/i);
+        let voice = 'alloy'; // 默認值
+        
+        if (voiceMatch && voiceMatch[1]) {
+            const extractedVoice = voiceMatch[1].toLowerCase().trim();
+            // 確保回傳的是有效的語音選項
+            const validVoices = ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'];
+            if (validVoices.includes(extractedVoice)) {
+                voice = extractedVoice;
+            } else {
+                console.warn('API返回了無效的語音名稱:', extractedVoice);
+            }
         }
+        
+        // 提取指令（如果有）
+        let instructions = '';
+        if (prayerText) {
+            const instructionsMatch = responseText.match(/INSTRUCTIONS:\s*([\s\S]+)/i);
+            if (instructionsMatch && instructionsMatch[1]) {
+                instructions = instructionsMatch[1].trim();
+            }
+        }
+        
+        return { voice, instructions };
     } catch (error) {
-        console.error('獲取語音建議失敗:', error);
-        return 'alloy'; // 出錯時使用默認語音
+        console.error('獲取語音建議及指令失敗:', error);
+        return { voice: 'alloy', instructions: '' }; // 出錯時使用默認語音
     }
 }
 
@@ -375,13 +428,8 @@ async function getEmotionalVerse(emotion) {
         return;
     }
     
-    // 根據情緒選擇適合的聲音
-    let selectedVoice = 'alloy'; // 默認語音
-    try {
-        selectedVoice = await getVoiceForEmotion(emotion);
-    } catch (error) {
-        console.error('選擇語音時出錯，使用默認語音:', error);
-    }
+    // 初始時先設置默認語音，稍後會根據禱告文內容再做選擇
+    let voiceData = { voice: 'alloy', instructions: '' };
     
     try {
         const verseElement = document.getElementById('verse');
@@ -437,6 +485,16 @@ async function getEmotionalVerse(emotion) {
             const formatText = (text) => text.replace(/\n/g, '<br>');
             const prayerText = prayerMatch[1].trim();
             
+            // 根據情緒和禱告文選擇適合的聲音和生成指令
+            try {
+                voiceData = await getVoiceAndInstructions(emotion, prayerText);
+            } catch (error) {
+                console.error('選擇語音時出錯，使用默認語音:', error);
+            }
+            
+            const selectedVoice = voiceData.voice;
+            const voiceInstructions = voiceData.instructions;
+            
             const verseElement = document.getElementById('verse');
             verseElement.classList.remove('loading-verse');
             verseElement.innerHTML = `
@@ -452,7 +510,7 @@ async function getEmotionalVerse(emotion) {
                     </p>
                     <div id="audio-player" style="margin: 15px 0;">
                         <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                            <button onclick="playPrayer('${encodeURIComponent(prayerText)}')" id="play-button">
+                            <button onclick="playPrayer('${encodeURIComponent(prayerText)}', '${encodeURIComponent(voiceInstructions)}')" id="play-button">
                                 <span id="play-text">${t('playPrayer')}</span>
                                 <span id="loading-spinner" style="display: none;">${t('generatingAudio')}</span>
                             </button>
@@ -490,7 +548,7 @@ async function getEmotionalVerse(emotion) {
 }
 
 // 修改playPrayer函數
-async function playPrayer(encodedText) {
+async function playPrayer(encodedText, encodedInstructions = '') {
     if (!apiKey) {
         alert(t('apiKeyNotSetAudio'));
         return;
@@ -508,6 +566,21 @@ async function playPrayer(encodedText) {
         spinner.style.display = 'inline';
         
         const text = decodeURIComponent(encodedText);
+        const instructions = encodedInstructions ? decodeURIComponent(encodedInstructions) : '';
+        
+        // 準備API請求體
+        const requestBody = {
+            model: "gpt-4o-mini-tts",
+            voice: selectedVoice,
+            input: text,
+            response_format: "mp3"
+        };
+        
+        // 如果有語音指令，添加到請求中
+        if (instructions) {
+            requestBody.instructions = instructions;
+        }
+        
         const response = await fetch('https://api.openai.com/v1/audio/speech', {
             method: 'POST',
             headers: {
@@ -515,13 +588,7 @@ async function playPrayer(encodedText) {
                 'Content-Type': 'application/json',
                 'Accept': 'audio/mpeg'
             },
-            body: JSON.stringify({
-               // model: "tts-1",
-                model: "gpt-4o-mini-tts",
-                voice: selectedVoice,
-                input: text,
-                response_format: "mp3"
-            })
+            body: JSON.stringify(requestBody)
         });
 
         const audioBlob = await response.blob();
