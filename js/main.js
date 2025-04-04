@@ -440,7 +440,7 @@ async function getEmotionalVerse(emotion) {
         
         // 開始倒數計時
         countdownSeconds = 0;
-        verseElement.innerHTML = `${t('loadingVerse')} <span id="countdown-timer">(0秒)</span>`;
+        verseElement.innerHTML = `${t('loadingVerse')} <span id="countdown-timer">(0)</span>`;
         verseElement.classList.add('loading-verse');
         
         // 設置倒數計時器
@@ -449,7 +449,7 @@ async function getEmotionalVerse(emotion) {
             countdownSeconds++;
             const timerElement = document.getElementById('countdown-timer');
             if (timerElement) {
-                timerElement.textContent = `(${countdownSeconds}秒)`;
+                timerElement.textContent = `(${countdownSeconds})`;
             }
         }, 1000);
         
