@@ -2,6 +2,55 @@
 let apiKey = '';
 let currentLanguage = '';
 
+// 檢測用戶瀏覽器語言並設置合適的語言
+function detectUserLanguage() {
+    // 只有當用戶還沒有設置語言偏好時才自動檢測
+    if (localStorage.getItem('preferredLanguage')) {
+        return;
+    }
+    
+    const supportedLanguages = ['zh-Hant', 'zh-Hans', 'en', 'ja', 'ko'];
+    let browserLang = navigator.language || navigator.userLanguage || '';
+    browserLang = browserLang.toLowerCase();
+    
+    // 首先檢查完全匹配
+    if (supportedLanguages.includes(browserLang)) {
+        localStorage.setItem('preferredLanguage', browserLang);
+        return;
+    }
+    
+    // 檢查語言代碼前綴匹配
+    const langPrefix = browserLang.split('-')[0];
+    
+    // 中文特殊處理：檢查是否為簡體中文區域
+    if (langPrefix === 'zh') {
+        // zh-CN, zh-SG 為簡體中文區域
+        if (browserLang.includes('cn') || browserLang.includes('sg')) {
+            localStorage.setItem('preferredLanguage', 'zh-Hans');
+        } else {
+            // zh-TW, zh-HK, zh-MO 等為繁體中文區域
+            localStorage.setItem('preferredLanguage', 'zh-Hant');
+        }
+        return;
+    }
+    
+    // 其他語言的前綴匹配
+    switch (langPrefix) {
+        case 'en':
+            localStorage.setItem('preferredLanguage', 'en');
+            break;
+        case 'ja':
+            localStorage.setItem('preferredLanguage', 'ja');
+            break;
+        case 'ko':
+            localStorage.setItem('preferredLanguage', 'ko');
+            break;
+        default:
+            // 默認使用繁體中文
+            localStorage.setItem('preferredLanguage', 'zh-Hant');
+    }
+}
+
 // 從環境變數中獲取API金鑰
 async function loadApiKey() {
     try {
@@ -15,6 +64,9 @@ async function loadApiKey() {
         console.error('無法載入環境變數:', error);
         apiKey = ''; // 設置為空字符串，將使用備用情緒列表
     }
+    
+    // 檢測並設置用戶語言
+    detectUserLanguage();
     
     // 獲取當前語言
     currentLanguage = getCurrentLanguage();
