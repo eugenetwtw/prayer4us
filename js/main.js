@@ -448,7 +448,8 @@ async function playPrayer(encodedText) {
                 'Accept': 'audio/mpeg'
             },
             body: JSON.stringify({
-                model: "tts-1",
+               // model: "tts-1",
+                model: "gpt-4o-mini-tts",
                 voice: selectedVoice,
                 input: text,
                 response_format: "mp3"
