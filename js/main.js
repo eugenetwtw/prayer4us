@@ -308,11 +308,79 @@ function showPreviousEmotions() {
     }
 }
 
+// 使用AI選擇最適合情緒的語音
+async function getVoiceForEmotion(emotion) {
+    try {
+        if (!apiKey) {
+            console.warn('API金鑰未設置，使用默認語音Alloy');
+            return 'alloy';
+        }
+        
+        const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [{
+                    role: 'user',
+                    content: `基於用戶的情緒「${emotion}」，請從以下六個OpenAI TTS語音中選擇最適合的一個:
+                    Alloy: 平衡的聲音，適合一般用途，提供清晰度和溫暖感
+                    Echo: 更動態的聲音，可以為通知增添興奮感
+                    Fable: 講故事的聲音，非常適合讀睡前故事或敘述內容
+                    Onyx: 深沉且豐富的聲音，適合權威性指令
+                    Nova: 明亮且歡快的聲音，適合友好的互動
+                    Shimmer: 柔和且舒緩的聲音，適合平靜的環境
+                    
+                    只回答一個語音名稱(小寫): alloy, echo, fable, onyx, nova, 或 shimmer。無需解釋理由。`
+                }],
+                max_tokens: 20,
+                temperature: 0.3
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (!data?.choices?.[0]?.message?.content) {
+            throw new Error('Invalid API response structure');
+        }
+
+        // 獲取回應並清理
+        const voiceName = data.choices[0].message.content.trim().toLowerCase();
+        
+        // 確保回傳的是有效的語音選項
+        const validVoices = ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'];
+        if (validVoices.includes(voiceName)) {
+            return voiceName;
+        } else {
+            console.warn('API返回了無效的語音名稱:', voiceName);
+            return 'alloy'; // 默認使用alloy
+        }
+    } catch (error) {
+        console.error('獲取語音建議失敗:', error);
+        return 'alloy'; // 出錯時使用默認語音
+    }
+}
+
 // 修改後的獲取經文函數
 async function getEmotionalVerse(emotion) {
     if (!apiKey) {
         document.getElementById('verse').innerHTML = t('apiKeyNotSet');
         return;
+    }
+    
+    // 根據情緒選擇適合的聲音
+    let selectedVoice = 'alloy'; // 默認語音
+    try {
+        selectedVoice = await getVoiceForEmotion(emotion);
+    } catch (error) {
+        console.error('選擇語音時出錯，使用默認語音:', error);
     }
     
     try {
@@ -391,12 +459,12 @@ async function getEmotionalVerse(emotion) {
                             <div style="margin-left: 15px; display: flex; align-items: center;">
                                 <span id="voice-selector-label" style="margin-right: 5px;">${t('voiceSelector')}:</span>
                                 <select id="voice-selector" style="padding: 5px; border-radius: 5px;">
-                                    <option value="alloy">${t('alloy')}</option>
-                                    <option value="echo">${t('echo')}</option>
-                                    <option value="fable">${t('fable')}</option>
-                                    <option value="onyx">${t('onyx')}</option>
-                                    <option value="nova">${t('nova')}</option>
-                                    <option value="shimmer">${t('shimmer')}</option>
+                                    <option value="alloy" ${selectedVoice === 'alloy' ? 'selected' : ''}>${t('alloy')}</option>
+                                    <option value="echo" ${selectedVoice === 'echo' ? 'selected' : ''}>${t('echo')}</option>
+                                    <option value="fable" ${selectedVoice === 'fable' ? 'selected' : ''}>${t('fable')}</option>
+                                    <option value="onyx" ${selectedVoice === 'onyx' ? 'selected' : ''}>${t('onyx')}</option>
+                                    <option value="nova" ${selectedVoice === 'nova' ? 'selected' : ''}>${t('nova')}</option>
+                                    <option value="shimmer" ${selectedVoice === 'shimmer' ? 'selected' : ''}>${t('shimmer')}</option>
                                 </select>
                             </div>
                         </div>
