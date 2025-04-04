@@ -422,6 +422,10 @@ VOICE: [選擇的語音名稱，小寫]`;
 }
 
 // 修改後的獲取經文函數
+// 倒數計時器變數
+let countdownInterval = null;
+let countdownSeconds = 0;
+
 async function getEmotionalVerse(emotion) {
     if (!apiKey) {
         document.getElementById('verse').innerHTML = t('apiKeyNotSet');
@@ -433,8 +437,21 @@ async function getEmotionalVerse(emotion) {
     
     try {
         const verseElement = document.getElementById('verse');
-        verseElement.innerHTML = t('loadingVerse');
+        
+        // 開始倒數計時
+        countdownSeconds = 0;
+        verseElement.innerHTML = `${t('loadingVerse')} <span id="countdown-timer">(0秒)</span>`;
         verseElement.classList.add('loading-verse');
+        
+        // 設置倒數計時器
+        clearInterval(countdownInterval); // 清除之前的計時器
+        countdownInterval = setInterval(() => {
+            countdownSeconds++;
+            const timerElement = document.getElementById('countdown-timer');
+            if (timerElement) {
+                timerElement.textContent = `(${countdownSeconds}秒)`;
+            }
+        }, 1000);
         
         const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
             method: 'POST',
@@ -495,6 +512,9 @@ async function getEmotionalVerse(emotion) {
             const selectedVoice = voiceData.voice;
             const voiceInstructions = voiceData.instructions;
             
+            // 清除倒數計時器
+            clearInterval(countdownInterval);
+            
             const verseElement = document.getElementById('verse');
             verseElement.classList.remove('loading-verse');
             verseElement.innerHTML = `
@@ -535,12 +555,18 @@ async function getEmotionalVerse(emotion) {
                 </div>
             `;
         } else {
+            // 清除倒數計時器
+            clearInterval(countdownInterval);
+            
             const verseElement = document.getElementById('verse');
             verseElement.classList.remove('loading-verse');
             verseElement.innerHTML = `${t('parseError')}<br>${responseText}`;
         }
     } catch (error) {
         console.error('錯誤：', error);
+        // 清除倒數計時器
+        clearInterval(countdownInterval);
+        
         const verseElement = document.getElementById('verse');
         verseElement.classList.remove('loading-verse');
         verseElement.innerHTML = t('errorGettingVerse');
