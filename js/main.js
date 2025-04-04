@@ -2,6 +2,9 @@
 let apiKey = '';
 let currentLanguage = '';
 
+// Counter API path - will be prefixed with window.location.origin
+const counterApiPath = '/api/counter';
+
 // 檢測用戶瀏覽器語言並設置合適的語言
 function detectUserLanguage() {
     // 只有當用戶還沒有設置語言偏好時才自動檢測
@@ -51,6 +54,50 @@ function detectUserLanguage() {
     }
 }
 
+// 記錄訪問
+async function recordVisit(language) {
+    try {
+        const response = await fetch(`${window.location.origin}${counterApiPath}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'visit',
+                language: language
+            })
+        });
+        
+        if (!response.ok) {
+            console.warn('無法記錄訪問');
+        }
+    } catch (error) {
+        console.warn('記錄訪問時出錯:', error);
+    }
+}
+
+// 記錄音頻生成
+async function recordAudioGeneration(language) {
+    try {
+        const response = await fetch(`${window.location.origin}${counterApiPath}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                action: 'audio',
+                language: language
+            })
+        });
+        
+        if (!response.ok) {
+            console.warn('無法記錄音頻生成');
+        }
+    } catch (error) {
+        console.warn('記錄音頻生成時出錯:', error);
+    }
+}
+
 // 從環境變數中獲取API金鑰
 async function loadApiKey() {
     try {
@@ -82,6 +129,9 @@ async function initEmotions() {
     
     // 創建語言選擇器
     createLanguageSelector();
+    
+    // 記錄訪問
+    await recordVisit(currentLanguage);
     
     // 獲取情緒列表
     const promptByLang = {
@@ -140,7 +190,10 @@ function createLanguageSelector() {
     
     // 添加語言切換事件
     langSelector.addEventListener('change', function() {
-        setCurrentLanguage(this.value);
+        const newLanguage = this.value;
+        setCurrentLanguage(newLanguage);
+        // 記錄新語言的訪問
+        recordVisit(newLanguage);
         // 重新加載情緒按鈕
         resetEmotionSelection();
     });
@@ -637,6 +690,9 @@ async function playPrayer(encodedText, encodedInstructions = '') {
     const playText = document.getElementById('play-text');
     const voiceSelector = document.getElementById('voice-selector');
     const selectedVoice = voiceSelector ? voiceSelector.value : 'alloy';
+    
+    // 記錄音頻生成事件
+    await recordAudioGeneration(currentLanguage);
     
     try {
         button.disabled = true;
