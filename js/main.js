@@ -427,6 +427,859 @@ async function getEmotionalVerse(emotion) {
         document.getElementById('verse').innerHTML = t('apiKeyNotSet');
         return;
     }
+// 獲取API金鑰
+let apiKey = '';
+let currentLanguage = '';
+
+// 從環境變數中獲取API金鑰
+async function loadApiKey() {
+    try {
+        // 使用 env-config.js 中的 getApiKey 函數
+        apiKey = await window.getApiKey();
+        if (!apiKey) {
+            console.error('API金鑰未設置');
+            apiKey = ''; // 設置為空字符串，將使用備用情緒列表
+        }
+    } catch (error) {
+        console.error('無法載入環境變數:', error);
+        apiKey = ''; // 設置為空字符串，將使用備用情緒列表
+    }
+    
+    // 獲取當前語言
+    currentLanguage = getCurrentLanguage();
+}
+
+let emotionHistory = []; // 用於記錄情緒列表歷史
+let usedEmotions = new Set(); // 記錄已使用過的情緒
+let otherSituationClickCount = 0; // 追蹤「我有其他狀況」按鈕點擊次數
+
+// 初始化獲取首頁情緒
+async function initEmotions() {
+    await loadApiKey();
+    
+    // 創建語言選擇器
+    createLanguageSelector();
+    
+    // 獲取情緒列表
+    const promptByLang = {
+        'zh-Hant': '首次訪問，請推薦5個常見的情緒狀態',
+        'zh-Hans': '首次访问，请推荐5个常见的情绪状态',
+        'en': 'First visit, please recommend 5 common emotional states',
+        'ja': '初回訪問、一般的な感情状態を5つ推薦してください',
+        'ko': '첫 방문, 일반적인 감정 상태 5가지를 추천해 주세요'
+    };
+    
+    const prompt = promptByLang[currentLanguage] || promptByLang['zh-Hant'];
+    const firstEmotions = await generateEmotions(prompt);
+    emotionHistory.push(firstEmotions);
+    createEmotionButtons(firstEmotions);
+}
+
+// 創建語言選擇器
+function createLanguageSelector() {
+    // 檢查是否已經存在語言選擇器
+    if (document.getElementById('languageSelector')) return;
+    
+    // 創建語言選擇容器
+    const langContainer = document.createElement('div');
+    langContainer.id = 'languageContainer';
+    langContainer.style.position = 'absolute';
+    langContainer.style.top = '10px';
+    langContainer.style.right = '10px';
+    
+    // 創建語言選擇標籤
+    const langLabel = document.createElement('span');
+    langLabel.textContent = t('languageSelector') + ': ';
+    langLabel.style.marginRight = '5px';
+    
+    // 創建語言選擇下拉框
+    const langSelector = document.createElement('select');
+    langSelector.id = 'languageSelector';
+    langSelector.style.padding = '5px';
+    langSelector.style.borderRadius = '5px';
+    
+    // 添加語言選項
+    const languages = [
+        { code: 'zh-Hant', name: '繁體中文' },
+        { code: 'zh-Hans', name: '简体中文' },
+        { code: 'en', name: 'English' },
+        { code: 'ja', name: '日本語' },
+        { code: 'ko', name: '한국어' }
+    ];
+    
+    languages.forEach(lang => {
+        const option = document.createElement('option');
+        option.value = lang.code;
+        option.textContent = lang.name;
+        option.selected = currentLanguage === lang.code;
+        langSelector.appendChild(option);
+    });
+    
+    // 添加語言切換事件
+    langSelector.addEventListener('change', function() {
+        setCurrentLanguage(this.value);
+        // 重新加載情緒按鈕
+        resetEmotionSelection();
+    });
+    
+    // 組裝語言選擇器
+    langContainer.appendChild(langLabel);
+    langContainer.appendChild(langSelector);
+    
+    // 添加到頁面
+    document.body.appendChild(langContainer);
+}
+
+// 用API生成情緒列表
+async function generateEmotions(context) {
+    if (!apiKey) {
+        console.warn('API金鑰未設置，使用備用情緒列表');
+        
+        // 根據語言返回不同的備用情緒列表
+        const fallbackEmotions = {
+            'zh-Hant': ['焦慮', '悲傷', '孤獨', '壓力', '喜樂', t('otherSituation')],
+            'zh-Hans': ['焦虑', '悲伤', '孤独', '压力', '喜乐', t('otherSituation')],
+            'en': ['Anxiety', 'Sadness', 'Loneliness', 'Stress', 'Joy', t('otherSituation')],
+            'ja': ['不安', '悲しみ', '孤独', 'ストレス', '喜び', t('otherSituation')],
+            'ko': ['불안', '슬픔', '외로움', '스트레스', '기쁨', t('otherSituation')]
+        };
+        
+        return fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
+    }
+    
+    try {
+        const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [{
+                    role: 'user',
+                    content: `根據以下情境提供5個${currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : '中文'}情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
+                    情境：${context}
+                    範例輸出：${currentLanguage === 'en' ? 'Anxiety Sadness Loneliness Stress Joy ' + t('otherSituation') : 
+                              currentLanguage === 'ja' ? '不安 悲しみ 孤独 ストレス 喜び ' + t('otherSituation') : 
+                              currentLanguage === 'ko' ? '불안 슬픔 외로움 스트레스 기쁨 ' + t('otherSituation') : 
+                              '焦慮 悲傷 孤獨 壓力 喜樂 ' + t('otherSituation')}`
+                }],
+                max_tokens: 100,
+                temperature: 0.7
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (!data?.choices?.[0]?.message?.content) {
+            throw new Error('Invalid API response structure');
+        }
+
+        const emotions = data.choices[0].message.content.split(' ');
+        
+        // 過濾已使用過的情緒
+        const newEmotions = emotions.filter(e => !usedEmotions.has(e));
+        newEmotions.forEach(e => usedEmotions.add(e));
+        
+        return newEmotions.slice(0, 5).concat(t('otherSituation'));
+    } catch (error) {
+        console.error('獲取情緒列表失敗:', error);
+        // 根據語言返回不同的備用情緒列表
+        const fallbackEmotions = {
+            'zh-Hant': ['焦慮', '悲傷', '孤獨', '壓力', '喜樂', t('otherSituation')],
+            'zh-Hans': ['焦虑', '悲伤', '孤独', '压力', '喜乐', t('otherSituation')],
+            'en': ['Anxiety', 'Sadness', 'Loneliness', 'Stress', 'Joy', t('otherSituation')],
+            'ja': ['不安', '悲しみ', '孤独', 'ストレス', '喜び', t('otherSituation')],
+            'ko': ['불안', '슬픔', '외로움', '스트레스', '기쁨', t('otherSituation')]
+        };
+        
+        return fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
+    }
+}
+
+// 創建動態按鈕
+function createEmotionButtons(emotions) {
+    const container = document.getElementById('mainEmotions');
+    container.innerHTML = '';
+    
+    emotions.forEach(emotion => {
+        const btn = document.createElement('button');
+        btn.textContent = emotion;
+        btn.onclick = () => {
+            if (emotion === t('otherSituation') || 
+               emotion === '我有其他狀況' || 
+               emotion === '我有其他状况' || 
+               emotion === 'I have another situation' ||
+               emotion === '他の状況があります' ||
+               emotion === '다른 상황이 있어요') {
+                loadMoreEmotions();
+            } else {
+                getEmotionalVerse(emotion);
+            }
+        };
+        if (emotion === t('otherSituation') || 
+           emotion === '我有其他狀況' || 
+           emotion === '我有其他状况' || 
+           emotion === 'I have another situation' ||
+           emotion === '他の状況があります' ||
+           emotion === '다른 상황이 있어요') {
+            btn.style.backgroundColor = '#2196F3';
+        }
+        container.appendChild(btn);
+    });
+}
+
+// 加載更多情緒
+async function loadMoreEmotions() {
+    try {
+        otherSituationClickCount++; // 增加點擊計數
+        
+        // 第三次點擊時顯示輸入框
+        if (otherSituationClickCount >= 3) {
+            showCustomEmotionInput();
+            return;
+        }
+        
+        document.getElementById('mainEmotions').innerHTML = t('loadingEmotions');
+        const newEmotions = await generateEmotions('需要不同於之前的情緒狀態');
+        emotionHistory.push(newEmotions);
+        createEmotionButtons(newEmotions);
+        document.getElementById('backButton').style.display = 'inline-block';
+    } catch (error) {
+        alert('無法加載更多情緒');
+    }
+}
+
+// 顯示自定義情緒輸入框
+function showCustomEmotionInput() {
+    const container = document.getElementById('mainEmotions');
+    container.innerHTML = '';
+    
+    // 創建輸入框
+    const inputContainer = document.createElement('div');
+    inputContainer.style.margin = '20px auto';
+    inputContainer.style.maxWidth = '500px';
+    
+    const label = document.createElement('p');
+    label.textContent = t('customEmotionLabel');
+    label.style.marginBottom = '10px';
+    label.style.fontWeight = 'bold';
+    
+    const textarea = document.createElement('textarea');
+    textarea.id = 'customEmotionInput';
+    textarea.style.width = '100%';
+    textarea.style.minHeight = '100px';
+    textarea.style.padding = '10px';
+    textarea.style.borderRadius = '8px';
+    textarea.style.border = '1px solid #ccc';
+    textarea.style.marginBottom = '15px';
+    textarea.style.fontFamily = 'inherit';
+    
+    const submitBtn = document.createElement('button');
+    submitBtn.textContent = t('submitButton');
+    submitBtn.style.backgroundColor = '#2196F3';
+    submitBtn.onclick = submitCustomEmotion;
+    
+    const resetBtn = document.createElement('button');
+    resetBtn.textContent = t('resetButton');
+    resetBtn.style.backgroundColor = '#666';
+    resetBtn.onclick = resetEmotionSelection;
+    
+    inputContainer.appendChild(label);
+    inputContainer.appendChild(textarea);
+    inputContainer.appendChild(submitBtn);
+    inputContainer.appendChild(resetBtn);
+    
+    container.appendChild(inputContainer);
+}
+
+// 提交自定義情緒
+function submitCustomEmotion() {
+    const customEmotion = document.getElementById('customEmotionInput').value.trim();
+    if (customEmotion) {
+        getEmotionalVerse(customEmotion);
+    } else {
+        alert('請輸入您的困難狀況');
+    }
+}
+
+// 重置情緒選擇
+function resetEmotionSelection() {
+    otherSituationClickCount = 0; // 重置計數器
+    initEmotions(); // 重新初始化情緒按鈕
+    document.getElementById('backButton').style.display = 'none';
+    document.getElementById('verse').innerHTML = ''; // 清空經文區域
+}
+
+// 返回上一個情緒列表
+function showPreviousEmotions() {
+    if (emotionHistory.length > 1) {
+        emotionHistory.pop(); // 移除當前列表
+        const prevEmotions = emotionHistory[emotionHistory.length-1];
+        createEmotionButtons(prevEmotions);
+        
+        // 如果返回到第一個情緒列表，重置計數器
+        if (emotionHistory.length === 1) {
+            otherSituationClickCount = 0;
+        } else {
+            // 否則減少計數器
+            otherSituationClickCount--;
+            if (otherSituationClickCount < 0) otherSituationClickCount = 0;
+        }
+    }
+    if (emotionHistory.length === 1) {
+        document.getElementById('backButton').style.display = 'none';
+    }
+}
+
+// 使用AI一次性選擇最適合情緒的語音和語音指令
+async function getVoiceAndInstructions(emotion, prayerText = '') {
+    try {
+        if (!apiKey) {
+            console.warn('API金鑰未設置，使用默認語音Alloy');
+            return { voice: 'alloy', instructions: '' };
+        }
+        
+        // 定義給AI的內容，根據是否有禱告文調整提示
+        let content = '';
+        if (prayerText) {
+            // 如果有禱告文，生成音色選擇和語音指令
+            content = `基於用戶情緒「${emotion}」及以下禱告文，請執行兩項任務：
+
+1. 從以下六個OpenAI TTS語音中選擇最適合的一個：
+   - Alloy: 平衡的聲音，適合一般用途，提供清晰度和溫暖感
+   - Echo: 更動態的聲音，可以為通知增添興奮感
+   - Fable: 講故事的聲音，非常適合讀睡前故事或敘述內容
+   - Onyx: 深沉且豐富的聲音，適合權威性指令
+   - Nova: 明亮且歡快的聲音，適合友好的互動
+   - Shimmer: 柔和且舒緩的聲音，適合平靜的環境
+
+2. 為這段禱告文生成適合的TTS指令：
+"""
+${prayerText}
+"""
+
+請按照以下格式回答：
+
+VOICE: [選擇的語音名稱，小寫]
+
+INSTRUCTIONS:
+Voice Affect: [聲音情感描述]
+Tone: [語調描述]
+Pacing: [速度描述]
+Emotions: [情緒描述]
+Pronunciation: [發音重點描述]
+Pauses: [停頓描述]`;
+        } else {
+            // 如果沒有禱告文，只選擇音色
+            content = `基於用戶的情緒「${emotion}」，請從以下六個OpenAI TTS語音中選擇最適合的一個:
+Alloy: 平衡的聲音，適合一般用途，提供清晰度和溫暖感
+Echo: 更動態的聲音，可以為通知增添興奮感
+Fable: 講故事的聲音，非常適合讀睡前故事或敘述內容
+Onyx: 深沉且豐富的聲音，適合權威性指令
+Nova: 明亮且歡快的聲音，適合友好的互動
+Shimmer: 柔和且舒緩的聲音，適合平靜的環境
+
+請按照以下格式回答：
+VOICE: [選擇的語音名稱，小寫]`;
+        }
+        
+        const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [{
+                    role: 'user',
+                    content: content
+                }],
+                max_tokens: prayerText ? 350 : 20,
+                temperature: 0.5
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (!data?.choices?.[0]?.message?.content) {
+            throw new Error('Invalid API response structure');
+        }
+
+        // 解析回應
+        const responseText = data.choices[0].message.content.trim();
+        
+        // 提取語音名稱
+        const voiceMatch = responseText.match(/VOICE:\s*(\w+)/i);
+        let voice = 'alloy'; // 默認值
+        
+        if (voiceMatch && voiceMatch[1]) {
+            const extractedVoice = voiceMatch[1].toLowerCase().trim();
+            // 確保回傳的是有效的語音選項
+            const validVoices = ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'];
+            if (validVoices.includes(extractedVoice)) {
+                voice = extractedVoice;
+            } else {
+                console.warn('API返回了無效的語音名稱:', extractedVoice);
+            }
+        }
+        
+        // 提取指令（如果有）
+        let instructions = '';
+        if (prayerText) {
+            const instructionsMatch = responseText.match(/INSTRUCTIONS:\s*([\s\S]+)/i);
+            if (instructionsMatch && instructionsMatch[1]) {
+                instructions = instructionsMatch[1].trim();
+            }
+        }
+        
+        return { voice, instructions };
+    } catch (error) {
+        console.error('獲取語音建議及指令失敗:', error);
+        return { voice: 'alloy', instructions: '' }; // 出錯時使用默認語音
+    }
+}
+
+
+// 獲取API金鑰
+let apiKey = '';
+let currentLanguage = '';
+
+// 從環境變數中獲取API金鑰
+async function loadApiKey() {
+    try {
+        // 使用 env-config.js 中的 getApiKey 函數
+        apiKey = await window.getApiKey();
+        if (!apiKey) {
+            console.error('API金鑰未設置');
+            apiKey = ''; // 設置為空字符串，將使用備用情緒列表
+        }
+    } catch (error) {
+        console.error('無法載入環境變數:', error);
+        apiKey = ''; // 設置為空字符串，將使用備用情緒列表
+    }
+    
+    // 獲取當前語言
+    currentLanguage = getCurrentLanguage();
+}
+
+let emotionHistory = []; // 用於記錄情緒列表歷史
+let usedEmotions = new Set(); // 記錄已使用過的情緒
+let otherSituationClickCount = 0; // 追蹤「我有其他狀況」按鈕點擊次數
+
+// 初始化獲取首頁情緒
+async function initEmotions() {
+    await loadApiKey();
+    
+    // 創建語言選擇器
+    createLanguageSelector();
+    
+    // 獲取情緒列表
+    const promptByLang = {
+        'zh-Hant': '首次訪問，請推薦5個常見的情緒狀態',
+        'zh-Hans': '首次访问，请推荐5个常见的情绪状态',
+        'en': 'First visit, please recommend 5 common emotional states',
+        'ja': '初回訪問、一般的な感情状態を5つ推薦してください',
+        'ko': '첫 방문, 일반적인 감정 상태 5가지를 추천해 주세요'
+    };
+    
+    const prompt = promptByLang[currentLanguage] || promptByLang['zh-Hant'];
+    const firstEmotions = await generateEmotions(prompt);
+    emotionHistory.push(firstEmotions);
+    createEmotionButtons(firstEmotions);
+}
+
+// 創建語言選擇器
+function createLanguageSelector() {
+    // 檢查是否已經存在語言選擇器
+    if (document.getElementById('languageSelector')) return;
+    
+    // 創建語言選擇容器
+    const langContainer = document.createElement('div');
+    langContainer.id = 'languageContainer';
+    langContainer.style.position = 'absolute';
+    langContainer.style.top = '10px';
+    langContainer.style.right = '10px';
+    
+    // 創建語言選擇標籤
+    const langLabel = document.createElement('span');
+    langLabel.textContent = t('languageSelector') + ': ';
+    langLabel.style.marginRight = '5px';
+    
+    // 創建語言選擇下拉框
+    const langSelector = document.createElement('select');
+    langSelector.id = 'languageSelector';
+    langSelector.style.padding = '5px';
+    langSelector.style.borderRadius = '5px';
+    
+    // 添加語言選項
+    const languages = [
+        { code: 'zh-Hant', name: '繁體中文' },
+        { code: 'zh-Hans', name: '简体中文' },
+        { code: 'en', name: 'English' },
+        { code: 'ja', name: '日本語' },
+        { code: 'ko', name: '한국어' }
+    ];
+    
+    languages.forEach(lang => {
+        const option = document.createElement('option');
+        option.value = lang.code;
+        option.textContent = lang.name;
+        option.selected = currentLanguage === lang.code;
+        langSelector.appendChild(option);
+    });
+    
+    // 添加語言切換事件
+    langSelector.addEventListener('change', function() {
+        setCurrentLanguage(this.value);
+        // 重新加載情緒按鈕
+        resetEmotionSelection();
+    });
+    
+    // 組裝語言選擇器
+    langContainer.appendChild(langLabel);
+    langContainer.appendChild(langSelector);
+    
+    // 添加到頁面
+    document.body.appendChild(langContainer);
+}
+
+// 用API生成情緒列表
+async function generateEmotions(context) {
+    if (!apiKey) {
+        console.warn('API金鑰未設置，使用備用情緒列表');
+        
+        // 根據語言返回不同的備用情緒列表
+        const fallbackEmotions = {
+            'zh-Hant': ['焦慮', '悲傷', '孤獨', '壓力', '喜樂', t('otherSituation')],
+            'zh-Hans': ['焦虑', '悲伤', '孤独', '压力', '喜乐', t('otherSituation')],
+            'en': ['Anxiety', 'Sadness', 'Loneliness', 'Stress', 'Joy', t('otherSituation')],
+            'ja': ['不安', '悲しみ', '孤独', 'ストレス', '喜び', t('otherSituation')],
+            'ko': ['불안', '슬픔', '외로움', '스트레스', '기쁨', t('otherSituation')]
+        };
+        
+        return fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
+    }
+    
+    try {
+        const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [{
+                    role: 'user',
+                    content: `根據以下情境提供5個${currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : '中文'}情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
+                    情境：${context}
+                    範例輸出：${currentLanguage === 'en' ? 'Anxiety Sadness Loneliness Stress Joy ' + t('otherSituation') : 
+                              currentLanguage === 'ja' ? '不安 悲しみ 孤独 ストレス 喜び ' + t('otherSituation') : 
+                              currentLanguage === 'ko' ? '불안 슬픔 외로움 스트레스 기쁨 ' + t('otherSituation') : 
+                              '焦慮 悲傷 孤獨 壓力 喜樂 ' + t('otherSituation')}`
+                }],
+                max_tokens: 100,
+                temperature: 0.7
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (!data?.choices?.[0]?.message?.content) {
+            throw new Error('Invalid API response structure');
+        }
+
+        const emotions = data.choices[0].message.content.split(' ');
+        
+        // 過濾已使用過的情緒
+        const newEmotions = emotions.filter(e => !usedEmotions.has(e));
+        newEmotions.forEach(e => usedEmotions.add(e));
+        
+        return newEmotions.slice(0, 5).concat(t('otherSituation'));
+    } catch (error) {
+        console.error('獲取情緒列表失敗:', error);
+        // 根據語言返回不同的備用情緒列表
+        const fallbackEmotions = {
+            'zh-Hant': ['焦慮', '悲傷', '孤獨', '壓力', '喜樂', t('otherSituation')],
+            'zh-Hans': ['焦虑', '悲伤', '孤独', '压力', '喜乐', t('otherSituation')],
+            'en': ['Anxiety', 'Sadness', 'Loneliness', 'Stress', 'Joy', t('otherSituation')],
+            'ja': ['不安', '悲しみ', '孤独', 'ストレス', '喜び', t('otherSituation')],
+            'ko': ['불안', '슬픔', '외로움', '스트레스', '기쁨', t('otherSituation')]
+        };
+        
+        return fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
+    }
+}
+
+// 創建動態按鈕
+function createEmotionButtons(emotions) {
+    const container = document.getElementById('mainEmotions');
+    container.innerHTML = '';
+    
+    emotions.forEach(emotion => {
+        const btn = document.createElement('button');
+        btn.textContent = emotion;
+        btn.onclick = () => {
+            if (emotion === t('otherSituation') || 
+               emotion === '我有其他狀況' || 
+               emotion === '我有其他状况' || 
+               emotion === 'I have another situation' ||
+               emotion === '他の状況があります' ||
+               emotion === '다른 상황이 있어요') {
+                loadMoreEmotions();
+            } else {
+                getEmotionalVerse(emotion);
+            }
+        };
+        if (emotion === t('otherSituation') || 
+           emotion === '我有其他狀況' || 
+           emotion === '我有其他状况' || 
+           emotion === 'I have another situation' ||
+           emotion === '他の状況があります' ||
+           emotion === '다른 상황이 있어요') {
+            btn.style.backgroundColor = '#2196F3';
+        }
+        container.appendChild(btn);
+    });
+}
+
+// 加載更多情緒
+async function loadMoreEmotions() {
+    try {
+        otherSituationClickCount++; // 增加點擊計數
+        
+        // 第三次點擊時顯示輸入框
+        if (otherSituationClickCount >= 3) {
+            showCustomEmotionInput();
+            return;
+        }
+        
+        document.getElementById('mainEmotions').innerHTML = t('loadingEmotions');
+        const newEmotions = await generateEmotions('需要不同於之前的情緒狀態');
+        emotionHistory.push(newEmotions);
+        createEmotionButtons(newEmotions);
+        document.getElementById('backButton').style.display = 'inline-block';
+    } catch (error) {
+        alert('無法加載更多情緒');
+    }
+}
+
+// 顯示自定義情緒輸入框
+function showCustomEmotionInput() {
+    const container = document.getElementById('mainEmotions');
+    container.innerHTML = '';
+    
+    // 創建輸入框
+    const inputContainer = document.createElement('div');
+    inputContainer.style.margin = '20px auto';
+    inputContainer.style.maxWidth = '500px';
+    
+    const label = document.createElement('p');
+    label.textContent = t('customEmotionLabel');
+    label.style.marginBottom = '10px';
+    label.style.fontWeight = 'bold';
+    
+    const textarea = document.createElement('textarea');
+    textarea.id = 'customEmotionInput';
+    textarea.style.width = '100%';
+    textarea.style.minHeight = '100px';
+    textarea.style.padding = '10px';
+    textarea.style.borderRadius = '8px';
+    textarea.style.border = '1px solid #ccc';
+    textarea.style.marginBottom = '15px';
+    textarea.style.fontFamily = 'inherit';
+    
+    const submitBtn = document.createElement('button');
+    submitBtn.textContent = t('submitButton');
+    submitBtn.style.backgroundColor = '#2196F3';
+    submitBtn.onclick = submitCustomEmotion;
+    
+    const resetBtn = document.createElement('button');
+    resetBtn.textContent = t('resetButton');
+    resetBtn.style.backgroundColor = '#666';
+    resetBtn.onclick = resetEmotionSelection;
+    
+    inputContainer.appendChild(label);
+    inputContainer.appendChild(textarea);
+    inputContainer.appendChild(submitBtn);
+    inputContainer.appendChild(resetBtn);
+    
+    container.appendChild(inputContainer);
+}
+
+// 提交自定義情緒
+function submitCustomEmotion() {
+    const customEmotion = document.getElementById('customEmotionInput').value.trim();
+    if (customEmotion) {
+        getEmotionalVerse(customEmotion);
+    } else {
+        alert('請輸入您的困難狀況');
+    }
+}
+
+// 重置情緒選擇
+function resetEmotionSelection() {
+    otherSituationClickCount = 0; // 重置計數器
+    initEmotions(); // 重新初始化情緒按鈕
+    document.getElementById('backButton').style.display = 'none';
+    document.getElementById('verse').innerHTML = ''; // 清空經文區域
+}
+
+// 返回上一個情緒列表
+function showPreviousEmotions() {
+    if (emotionHistory.length > 1) {
+        emotionHistory.pop(); // 移除當前列表
+        const prevEmotions = emotionHistory[emotionHistory.length-1];
+        createEmotionButtons(prevEmotions);
+        
+        // 如果返回到第一個情緒列表，重置計數器
+        if (emotionHistory.length === 1) {
+            otherSituationClickCount = 0;
+        } else {
+            // 否則減少計數器
+            otherSituationClickCount--;
+            if (otherSituationClickCount < 0) otherSituationClickCount = 0;
+        }
+    }
+    if (emotionHistory.length === 1) {
+        document.getElementById('backButton').style.display = 'none';
+    }
+}
+
+// 使用AI一次性選擇最適合情緒的語音和語音指令
+async function getVoiceAndInstructions(emotion, prayerText = '') {
+    try {
+        if (!apiKey) {
+            console.warn('API金鑰未設置，使用默認語音Alloy');
+            return { voice: 'alloy', instructions: '' };
+        }
+        
+        // 定義給AI的內容，根據是否有禱告文調整提示
+        let content = '';
+        if (prayerText) {
+            // 如果有禱告文，生成音色選擇和語音指令
+            content = `基於用戶情緒「${emotion}」及以下禱告文，請執行兩項任務：
+
+1. 從以下六個OpenAI TTS語音中選擇最適合的一個：
+   - Alloy: 平衡的聲音，適合一般用途，提供清晰度和溫暖感
+   - Echo: 更動態的聲音，可以為通知增添興奮感
+   - Fable: 講故事的聲音，非常適合讀睡前故事或敘述內容
+   - Onyx: 深沉且豐富的聲音，適合權威性指令
+   - Nova: 明亮且歡快的聲音，適合友好的互動
+   - Shimmer: 柔和且舒緩的聲音，適合平靜的環境
+
+2. 為這段禱告文生成適合的TTS指令：
+"""
+${prayerText}
+"""
+
+請按照以下格式回答：
+
+VOICE: [選擇的語音名稱，小寫]
+
+INSTRUCTIONS:
+Voice Affect: [聲音情感描述]
+Tone: [語調描述]
+Pacing: [速度描述]
+Emotions: [情緒描述]
+Pronunciation: [發音重點描述]
+Pauses: [停頓描述]`;
+        } else {
+            // 如果沒有禱告文，只選擇音色
+            content = `基於用戶的情緒「${emotion}」，請從以下六個OpenAI TTS語音中選擇最適合的一個:
+Alloy: 平衡的聲音，適合一般用途，提供清晰度和溫暖感
+Echo: 更動態的聲音，可以為通知增添興奮感
+Fable: 講故事的聲音，非常適合讀睡前故事或敘述內容
+Onyx: 深沉且豐富的聲音，適合權威性指令
+Nova: 明亮且歡快的聲音，適合友好的互動
+Shimmer: 柔和且舒緩的聲音，適合平靜的環境
+
+請按照以下格式回答：
+VOICE: [選擇的語音名稱，小寫]`;
+        }
+        
+        const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [{
+                    role: 'user',
+                    content: content
+                }],
+                max_tokens: prayerText ? 350 : 20,
+                temperature: 0.5
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (!data?.choices?.[0]?.message?.content) {
+            throw new Error('Invalid API response structure');
+        }
+
+        // 解析回應
+        const responseText = data.choices[0].message.content.trim();
+        
+        // 提取語音名稱
+        const voiceMatch = responseText.match(/VOICE:\s*(\w+)/i);
+        let voice = 'alloy'; // 默認值
+        
+        if (voiceMatch && voiceMatch[1]) {
+            const extractedVoice = voiceMatch[1].toLowerCase().trim();
+            // 確保回傳的是有效的語音選項
+            const validVoices = ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'];
+            if (validVoices.includes(extractedVoice)) {
+                voice = extractedVoice;
+            } else {
+                console.warn('API返回了無效的語音名稱:', extractedVoice);
+            }
+        }
+        
+        // 提取指令（如果有）
+        let instructions = '';
+        if (prayerText) {
+            const instructionsMatch = responseText.match(/INSTRUCTIONS:\s*([\s\S]+)/i);
+            if (instructionsMatch && instructionsMatch[1]) {
+                instructions = instructionsMatch[1].trim();
+            }
+        }
+        
+        return { voice, instructions };
+    } catch (error) {
+        console.error('獲取語音建議及指令失敗:', error);
+        return { voice: 'alloy', instructions: '' }; // 出錯時使用默認語音
+    }
+}
+
+// 修改後的獲取經文函數
+async function getEmotionalVerse(emotion) {
+    if (!apiKey) {
+        document.getElementById('verse').innerHTML = t('apiKeyNotSet');
+        return;
+    }
     
     // 初始時先設置默認語音，稍後會根據禱告文內容再做選擇
     let voiceData = { voice: 'alloy', instructions: '' };
@@ -485,15 +1338,9 @@ async function getEmotionalVerse(emotion) {
             const formatText = (text) => text.replace(/\n/g, '<br>');
             const prayerText = prayerMatch[1].trim();
             
-            // 根據情緒和禱告文選擇適合的聲音和生成指令
-            try {
-                voiceData = await getVoiceAndInstructions(emotion, prayerText);
-            } catch (error) {
-                console.error('選擇語音時出錯，使用默認語音:', error);
-            }
-            
-            const selectedVoice = voiceData.voice;
-            const voiceInstructions = voiceData.instructions;
+            // 不在這裡調用API選擇語音，而是在用戶點擊播放按鈕時才執行
+            // 默認使用 alloy 聲音顯示在選擇框中
+            const selectedVoice = 'alloy';
             
             const verseElement = document.getElementById('verse');
             verseElement.classList.remove('loading-verse');
@@ -510,7 +1357,7 @@ async function getEmotionalVerse(emotion) {
                     </p>
                     <div id="audio-player" style="margin: 15px 0;">
                         <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                            <button onclick="playPrayer('${encodeURIComponent(prayerText)}', '${encodeURIComponent(voiceInstructions)}')" id="play-button">
+                            <button onclick="playPrayer('${encodeURIComponent(prayerText)}', '${encodeURIComponent(emotion)}')" id="play-button">
                                 <span id="play-text">${t('playPrayer')}</span>
                                 <span id="loading-spinner" style="display: none;">${t('generatingAudio')}</span>
                             </button>
@@ -548,7 +1395,7 @@ async function getEmotionalVerse(emotion) {
 }
 
 // 修改playPrayer函數
-async function playPrayer(encodedText, encodedInstructions = '') {
+async function playPrayer(encodedText, encodedEmotion = '') {
     if (!apiKey) {
         alert(t('apiKeyNotSetAudio'));
         return;
@@ -558,21 +1405,53 @@ async function playPrayer(encodedText, encodedInstructions = '') {
     const spinner = document.getElementById('loading-spinner');
     const playText = document.getElementById('play-text');
     const voiceSelector = document.getElementById('voice-selector');
-    const selectedVoice = voiceSelector ? voiceSelector.value : 'alloy';
+    const userSelectedVoice = voiceSelector ? voiceSelector.value : 'alloy';
     
     try {
         button.disabled = true;
         playText.style.display = 'none';
         spinner.style.display = 'inline';
         
-        const text = decodeURIComponent(encodedText);
-        const instructions = encodedInstructions ? decodeURIComponent(encodedInstructions) : '';
+        const prayerText = decodeURIComponent(encodedText);
+        const emotion = encodedEmotion ? decodeURIComponent(encodedEmotion) : '';
+        
+        // 現在才調用API選擇語音和生成指令
+        let voice = userSelectedVoice;
+        let instructions = '';
+        
+        // 如果用戶選擇的是alloy（預設值），且我們有情緒信息，可以嘗試推薦更合適的聲音
+        if (userSelectedVoice === 'alloy' && emotion) {
+            try {
+                console.log(`根據情緒選擇更合適的聲音...`);
+                const voiceData = await getVoiceAndInstructions(emotion, prayerText);
+                // 只有當用戶沒有手動選擇其他聲音時，才使用AI推薦的聲音
+                voice = voiceData.voice;
+                instructions = voiceData.instructions;
+                
+                // 動態更新選擇框以顯示推薦的聲音
+                if (voiceSelector && voice !== 'alloy') {
+                    voiceSelector.value = voice;
+                }
+                
+                console.log(`已選擇「${voice}」聲音`);
+            } catch (error) {
+                console.error('選擇語音失敗，使用用戶選擇的聲音:', error);
+            }
+        } else if (userSelectedVoice !== 'alloy' && emotion) {
+            // 用戶已選擇了特定聲音，但仍然生成指令
+            try {
+                const instructionsOnly = await generateVoiceInstructions(emotion, prayerText, userSelectedVoice);
+                instructions = instructionsOnly;
+            } catch (error) {
+                console.error('生成語音指令失敗:', error);
+            }
+        }
         
         // 準備API請求體
         const requestBody = {
             model: "gpt-4o-mini-tts",
-            voice: selectedVoice,
-            input: text,
+            voice: voice,
+            input: prayerText,
             response_format: "mp3"
         };
         
@@ -605,6 +1484,72 @@ async function playPrayer(encodedText, encodedInstructions = '') {
         playText.style.display = 'inline';
         spinner.style.display = 'none';
     }
+
+// 專門用於生成語音指令的函數
+async function generateVoiceInstructions(emotion, prayerText, voiceType) {
+    try {
+        if (!apiKey) {
+            return '';
+        }
+        
+        const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [{
+                    role: 'user',
+                    content: `我有一段禱告文，需要通過文字轉語音(TTS)進行朗讀。請基於以下情境為我生成適合的TTS指令：
+
+1. 用戶情緒狀態：${emotion}
+2. 選用的聲音：${voiceType}
+3. 禱告文內容：
+"""
+${prayerText}
+"""
+
+請為這段禱告文生成專業的TTS指令，包括：
+- Voice Affect（聲音情感）：描述基本音調和情緒
+- Tone（語調）：描述說話方式和情感表達
+- Pacing（速度）：何時加快或放慢
+- Emotions（情緒）：應該表達的主要情緒
+- Pronunciation（發音）：需要特別強調的部分
+- Pauses（停頓）：何處需要有意義的停頓
+
+回覆格式為：
+Voice Affect: [描述]
+Tone: [描述]
+Pacing: [描述]
+Emotions: [描述]
+Pronunciation: [描述]
+Pauses: [描述]
+
+請直接生成指令內容，不要添加任何前言或解釋。`
+                }],
+                max_tokens: 350,
+                temperature: 0.7
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (!data?.choices?.[0]?.message?.content) {
+            throw new Error('Invalid API response structure');
+        }
+
+        return data.choices[0].message.content.trim();
+    } catch (error) {
+        console.error('生成語音指令失敗:', error);
+        return ''; // 出錯時返回空字串
+    }
+}
 }
 
 // 初始化按鈕
