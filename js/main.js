@@ -2,8 +2,14 @@
 let apiKey = '';
 let currentLanguage = '';
 
-// Counter API path - adjust according to your deployment structure
+// Counter API path - adjusted for actual deployment structure
 const counterApiPath = '/api/counter';
+
+// Alternative paths to try if the main path fails
+const fallbackCounterApiPaths = [
+  '/pages/api/counter',  // Try pages directory path
+  '/counter'             // Try direct root path
+];
 
 // Flag to disable counter functionality if the endpoint is not available
 let counterFunctionalityDisabled = false;
@@ -67,7 +73,7 @@ async function recordVisit(language) {
 
     try {
         // 打印 API URL 以便調試
-        const apiUrl = `${window.location.origin}${counterApiPath}`;
+        const apiUrl = `${window.location.origin}${actualApiPath}`;
         console.log('正在記錄訪問，API URL:', apiUrl);
         
         const response = await fetch(apiUrl, {
@@ -115,7 +121,7 @@ async function recordAudioGeneration(language) {
 
     try {
         // 打印 API URL 以便調試
-        const apiUrl = `${window.location.origin}${counterApiPath}`;
+        const apiUrl = `${window.location.origin}${actualApiPath}`;
         console.log('正在記錄音頻生成，API URL:', apiUrl);
         
         const response = await fetch(apiUrl, {
@@ -796,26 +802,65 @@ async function playPrayer(encodedText, encodedInstructions = '') {
     }
 }
 
-// 檢查API端點是否可用，如果不可用，則禁用計數器功能
+// 用於存儲實際工作的 API 路徑
+let actualApiPath = counterApiPath;
+
+// 檢查API端點是否可用，如果不可用，則嘗試備用路徑，如果全部不可用，則禁用計數器功能
 async function checkCounterEndpoint() {
     try {
         // 如果進入此函數時功能已被禁用，則不再進行檢查
         if (counterFunctionalityDisabled) return;
         
-        // 嘗試呼叫API
-        const apiUrl = `${window.location.origin}${counterApiPath}`;
-        const response = await fetch(apiUrl, {
-            method: 'GET'
-        });
+        // 先嘗試主路徑
+        console.log(`嘗試主 API 路徑: ${counterApiPath}`);
+        let apiWorks = false;
         
-        if (!response.ok) {
-            console.warn(`計數器API不可用，狀態碼: ${response.status}，禁用計數器功能`);
+        // 嘗試主路徑
+        let apiUrl = `${window.location.origin}${counterApiPath}`;
+        try {
+            const response = await fetch(apiUrl, { method: 'GET' });
+            if (response.ok) {
+                console.log(`主路徑可用: ${counterApiPath}`);
+                actualApiPath = counterApiPath;
+                apiWorks = true;
+            } else {
+                console.warn(`主 API 路徑不可用，狀態碼: ${response.status}`);
+            }
+        } catch (e) {
+            console.warn(`主 API 路徑請求失敗: ${e.message}`);
+        }
+        
+        // 如果主路徑不工作，嘗試備用路徑
+        if (!apiWorks) {
+            for (const fallbackPath of fallbackCounterApiPaths) {
+                console.log(`嘗試備用 API 路徑: ${fallbackPath}`);
+                apiUrl = `${window.location.origin}${fallbackPath}`;
+                
+                try {
+                    const response = await fetch(apiUrl, { method: 'GET' });
+                    if (response.ok) {
+                        console.log(`備用路徑可用: ${fallbackPath}`);
+                        actualApiPath = fallbackPath;
+                        apiWorks = true;
+                        break;
+                    } else {
+                        console.warn(`備用 API 路徑不可用，狀態碼: ${response.status}`);
+                    }
+                } catch (e) {
+                    console.warn(`備用 API 路徑請求失敗: ${e.message}`);
+                }
+            }
+        }
+        
+        // 如果所有路徑都不可用，禁用計數器功能
+        if (!apiWorks) {
+            console.warn('所有 API 路徑都不可用，禁用計數器功能');
             counterFunctionalityDisabled = true;
         } else {
-            console.log('計數器API可用');
+            console.log(`計數器 API 可用，使用路徑: ${actualApiPath}`);
         }
     } catch (error) {
-        console.warn('檢查計數器API時出錯:', error);
+        console.warn('檢查計數器 API 時出錯:', error);
         console.warn('禁用計數器功能');
         counterFunctionalityDisabled = true;
     }
