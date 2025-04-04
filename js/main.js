@@ -57,7 +57,11 @@ function detectUserLanguage() {
 // 記錄訪問
 async function recordVisit(language) {
     try {
-        const response = await fetch(`${window.location.origin}${counterApiPath}`, {
+        // 打印 API URL 以便調試
+        const apiUrl = `${window.location.origin}${counterApiPath}`;
+        console.log('正在記錄訪問，API URL:', apiUrl);
+        
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -69,17 +73,37 @@ async function recordVisit(language) {
         });
         
         if (!response.ok) {
-            console.warn('無法記錄訪問');
+            console.warn(`無法記錄訪問，狀態碼: ${response.status}`);
+            
+            // 嘗試讀取錯誤詳情
+            try {
+                const errorData = await response.json();
+                console.warn('錯誤詳情:', errorData);
+            } catch (e) {
+                // 可能無法解析為 JSON
+                console.warn('無法解析錯誤回應');
+            }
+        } else {
+            console.log('成功記錄訪問');
         }
     } catch (error) {
         console.warn('記錄訪問時出錯:', error);
+        
+        // 如果在本地開發中遇到 404 錯誤，可能是 API 尚未準備好
+        if (error.message && error.message.includes('404')) {
+            console.info('提示: 在本地開發中，請確保 Next.js API 路由正確設置並運行。');
+        }
     }
 }
 
 // 記錄音頻生成
 async function recordAudioGeneration(language) {
     try {
-        const response = await fetch(`${window.location.origin}${counterApiPath}`, {
+        // 打印 API URL 以便調試
+        const apiUrl = `${window.location.origin}${counterApiPath}`;
+        console.log('正在記錄音頻生成，API URL:', apiUrl);
+        
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -91,10 +115,26 @@ async function recordAudioGeneration(language) {
         });
         
         if (!response.ok) {
-            console.warn('無法記錄音頻生成');
+            console.warn(`無法記錄音頻生成，狀態碼: ${response.status}`);
+            
+            // 嘗試讀取錯誤詳情
+            try {
+                const errorData = await response.json();
+                console.warn('錯誤詳情:', errorData);
+            } catch (e) {
+                // 可能無法解析為 JSON
+                console.warn('無法解析錯誤回應');
+            }
+        } else {
+            console.log('成功記錄音頻生成');
         }
     } catch (error) {
         console.warn('記錄音頻生成時出錯:', error);
+        
+        // 檢查是否為404錯誤，在本地開發中提供更有用的訊息
+        if (error.message && error.message.includes('404')) {
+            console.info('提示: 在本地開發中，請確保 Next.js API 路由正確設置並運行，或已部署到 Vercel 。');
+        }
     }
 }
 
