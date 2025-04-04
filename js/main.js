@@ -428,9 +428,6 @@ async function getEmotionalVerse(emotion) {
         return;
     }
     
-    // 初始時先設置默認語音，稍後會根據禱告文內容再做選擇
-    let voiceData = { voice: 'alloy', instructions: '' };
-    
     try {
         const verseElement = document.getElementById('verse');
         verseElement.innerHTML = t('loadingVerse');
@@ -485,15 +482,9 @@ async function getEmotionalVerse(emotion) {
             const formatText = (text) => text.replace(/\n/g, '<br>');
             const prayerText = prayerMatch[1].trim();
             
-            // 根據情緒和禱告文選擇適合的聲音和生成指令
-            try {
-                voiceData = await getVoiceAndInstructions(emotion, prayerText);
-            } catch (error) {
-                console.error('選擇語音時出錯，使用默認語音:', error);
-            }
-            
-            const selectedVoice = voiceData.voice;
-            const voiceInstructions = voiceData.instructions;
+            // 使用默認語音
+            const selectedVoice = 'alloy';
+            const emotion_encoded = encodeURIComponent(emotion);
             
             const verseElement = document.getElementById('verse');
             verseElement.classList.remove('loading-verse');
@@ -510,7 +501,7 @@ async function getEmotionalVerse(emotion) {
                     </p>
                     <div id="audio-player" style="margin: 15px 0;">
                         <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                            <button onclick="playPrayer('${encodeURIComponent(prayerText)}', '${encodeURIComponent(voiceInstructions)}')" id="play-button">
+                            <button onclick="playPrayer('${encodeURIComponent(prayerText)}', '${emotion_encoded}')" id="play-button">
                                 <span id="play-text">${t('playPrayer')}</span>
                                 <span id="loading-spinner" style="display: none;">${t('generatingAudio')}</span>
                             </button>
@@ -548,7 +539,7 @@ async function getEmotionalVerse(emotion) {
 }
 
 // 修改playPrayer函數
-async function playPrayer(encodedText, encodedInstructions = '') {
+async function playPrayer(encodedText, encodedEmotion = '') {
     if (!apiKey) {
         alert(t('apiKeyNotSetAudio'));
         return;
@@ -566,7 +557,19 @@ async function playPrayer(encodedText, encodedInstructions = '') {
         spinner.style.display = 'inline';
         
         const text = decodeURIComponent(encodedText);
-        const instructions = encodedInstructions ? decodeURIComponent(encodedInstructions) : '';
+        const emotion = encodedEmotion ? decodeURIComponent(encodedEmotion) : '';
+        
+        // 在播放時獲取語音建議和指令
+        let voiceData = { voice: selectedVoice, instructions: '' };
+        if (emotion) {
+            try {
+                voiceData = await getVoiceAndInstructions(emotion, text);
+            } catch (error) {
+                console.error('選擇語音時出錯，使用選擇的語音:', error);
+            }
+        }
+        
+        const instructions = voiceData.instructions;
         
         // 準備API請求體
         const requestBody = {
