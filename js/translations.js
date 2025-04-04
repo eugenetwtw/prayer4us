@@ -62,7 +62,7 @@ const translations = {
     },
     // English
     'en': {
-        title: 'I Pray With You',
+        title: 'Let me Pray With You',
         backButton: '↩ Previous Emotions',
         loadingEmotions: '⏳ Finding more emotions...',
         customEmotionLabel: 'Please describe your current situation:',
