@@ -28,7 +28,7 @@ const translations = {
         audioPlayError: '無法播放音頻，請稍後再試',
         parseError: '⚠️ 未能解析回應，以下是原始內容：',
         apiKeyNotSetAudio: 'API金鑰未設置，無法播放音頻',
-        languageSelector: 'Language 文'
+        languageSelector: 'Language'
     },
     // Simplified Chinese
     'zh-Hans': {
@@ -58,7 +58,7 @@ const translations = {
         audioPlayError: '无法播放音频，请稍后再试',
         parseError: '⚠️ 未能解析响应，以下是原始内容：',
         apiKeyNotSetAudio: 'API密钥未设置，无法播放音频',
-        languageSelector: '语言Language'
+        languageSelector: 'Language'
     },
     // English
     'en': {
@@ -88,7 +88,7 @@ const translations = {
         audioPlayError: 'Cannot play audio, please try again later',
         parseError: '⚠️ Could not parse response, here is the original content:',
         apiKeyNotSetAudio: 'API key not set, cannot play audio',
-        languageSelector: 'Language语言'
+        languageSelector: 'Language'
     },
     // Japanese
     'ja': {
@@ -118,7 +118,7 @@ const translations = {
         audioPlayError: '音声を再生できません、後でもう一度お試しください',
         parseError: '⚠️ 応答を解析できませんでした、以下は元のコンテンツです：',
         apiKeyNotSetAudio: 'APIキーが設定されていません、音声を再生できません',
-        languageSelector: '言語Language'
+        languageSelector: 'Language'
     },
     // Korean
     'ko': {
@@ -148,7 +148,7 @@ const translations = {
         audioPlayError: '오디오를 재생할 수 없습니다. 나중에 다시 시도해 주세요',
         parseError: '⚠️ 응답을 분석할 수 없습니다. 다음은 원본 내용입니다:',
         apiKeyNotSetAudio: 'API 키가 설정되지 않았습니다. 오디오를 재생할 수 없습니다',
-        languageSelector: '언어Language'
+        languageSelector: 'Language'
     }
 };
 
