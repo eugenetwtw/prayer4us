@@ -421,78 +421,15 @@ VOICE: [選擇的語音名稱，小寫]`;
     }
 }
 
-// 專門用於生成語音指令的函數
-async function generateVoiceInstructions(emotion, prayerText, voiceType) {
-    try {
-        if (!apiKey) {
-            return '';
-        }
-        
-        const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                model: 'gpt-4o-mini',
-                messages: [{
-                    role: 'user',
-                    content: `我有一段禱告文，需要通過文字轉語音(TTS)進行朗讀。請基於以下情境為我生成適合的TTS指令：
-
-1. 用戶情緒狀態：${emotion}
-2. 選用的聲音：${voiceType}
-3. 禱告文內容：
-"""
-${prayerText}
-"""
-
-請為這段禱告文生成專業的TTS指令，包括：
-- Voice Affect（聲音情感）：描述基本音調和情緒
-- Tone（語調）：描述說話方式和情感表達
-- Pacing（速度）：何時加快或放慢
-- Emotions（情緒）：應該表達的主要情緒
-- Pronunciation（發音）：需要特別強調的部分
-- Pauses（停頓）：何處需要有意義的停頓
-
-回覆格式為：
-Voice Affect: [描述]
-Tone: [描述]
-Pacing: [描述]
-Emotions: [描述]
-Pronunciation: [描述]
-Pauses: [描述]
-
-請直接生成指令內容，不要添加任何前言或解釋。`
-                }],
-                max_tokens: 350,
-                temperature: 0.7
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        
-        if (!data?.choices?.[0]?.message?.content) {
-            throw new Error('Invalid API response structure');
-        }
-
-        return data.choices[0].message.content.trim();
-    } catch (error) {
-        console.error('生成語音指令失敗:', error);
-        return ''; // 出錯時返回空字串
-    }
-}
-
 // 修改後的獲取經文函數
 async function getEmotionalVerse(emotion) {
     if (!apiKey) {
         document.getElementById('verse').innerHTML = t('apiKeyNotSet');
         return;
     }
+    
+    // 初始時先設置默認語音，稍後會根據禱告文內容再做選擇
+    let voiceData = { voice: 'alloy', instructions: '' };
     
     try {
         const verseElement = document.getElementById('verse');
@@ -510,7 +447,7 @@ async function getEmotionalVerse(emotion) {
                 messages: [{ 
                     role: 'user',
                     content: `請針對「${emotion}」情緒：
-                    1. 提供合適聖經經文，若語言是繁體中文，提供和合本的聖經經文(格式：『經文』書名 章:節)${currentLanguage === 'en' || currentLanguage === 'ja' || currentLanguage === 'ko' ? '只需' + (currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : '韓文') : '同時提出中英文'}
+                    1. 提供合適聖經經文(格式：『經文』書名 章:節)${currentLanguage === 'en' || currentLanguage === 'ja' || currentLanguage === 'ko' ? '只需' + (currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : '韓文') : '同時提出中英文'}
                     2. 簡明的解說，50字內，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
                     3. 禱告詞，100字以上，你是一個資深慈愛的牧師，同情用戶的狀態，深情地為用戶禱告，為用戶設身處地思考，祈求上帝給用戶安慰和力量，用華麗的辭藻，用詩歌般的語言，用最真摯的情感，寫出最感人的禱告詞，激發用戶的感受，讓靈性灌注與降臨，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
                     請用以下格式回應：
@@ -548,9 +485,15 @@ async function getEmotionalVerse(emotion) {
             const formatText = (text) => text.replace(/\n/g, '<br>');
             const prayerText = prayerMatch[1].trim();
             
-            // 不在這裡調用API選擇語音，而是在用戶點擊播放按鈕時才執行
-            // 默認使用 alloy 聲音顯示在選擇框中
-            const selectedVoice = 'alloy';
+            // 根據情緒和禱告文選擇適合的聲音和生成指令
+            try {
+                voiceData = await getVoiceAndInstructions(emotion, prayerText);
+            } catch (error) {
+                console.error('選擇語音時出錯，使用默認語音:', error);
+            }
+            
+            const selectedVoice = voiceData.voice;
+            const voiceInstructions = voiceData.instructions;
             
             const verseElement = document.getElementById('verse');
             verseElement.classList.remove('loading-verse');
@@ -567,7 +510,7 @@ async function getEmotionalVerse(emotion) {
                     </p>
                     <div id="audio-player" style="margin: 15px 0;">
                         <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                            <button onclick="playPrayer('${encodeURIComponent(prayerText)}', '${encodeURIComponent(emotion)}')" id="play-button">
+                            <button onclick="playPrayer('${encodeURIComponent(prayerText)}', '${encodeURIComponent(voiceInstructions)}')" id="play-button">
                                 <span id="play-text">${t('playPrayer')}</span>
                                 <span id="loading-spinner" style="display: none;">${t('generatingAudio')}</span>
                             </button>
@@ -605,7 +548,7 @@ async function getEmotionalVerse(emotion) {
 }
 
 // 修改playPrayer函數
-async function playPrayer(encodedText, encodedEmotion = '') {
+async function playPrayer(encodedText, encodedInstructions = '') {
     if (!apiKey) {
         alert(t('apiKeyNotSetAudio'));
         return;
@@ -615,53 +558,21 @@ async function playPrayer(encodedText, encodedEmotion = '') {
     const spinner = document.getElementById('loading-spinner');
     const playText = document.getElementById('play-text');
     const voiceSelector = document.getElementById('voice-selector');
-    const userSelectedVoice = voiceSelector ? voiceSelector.value : 'alloy';
+    const selectedVoice = voiceSelector ? voiceSelector.value : 'alloy';
     
     try {
         button.disabled = true;
         playText.style.display = 'none';
         spinner.style.display = 'inline';
         
-        const prayerText = decodeURIComponent(encodedText);
-        const emotion = encodedEmotion ? decodeURIComponent(encodedEmotion) : '';
-        
-        // 現在才調用API選擇語音和生成指令
-        let voice = userSelectedVoice;
-        let instructions = '';
-        
-        // 如果用戶選擇的是alloy（預設值），且我們有情緒信息，可以嘗試推薦更合適的聲音
-        if (userSelectedVoice === 'alloy' && emotion) {
-            try {
-                console.log(`根據情緒選擇更合適的聲音...`);
-                const voiceData = await getVoiceAndInstructions(emotion, prayerText);
-                // 只有當用戶沒有手動選擇其他聲音時，才使用AI推薦的聲音
-                voice = voiceData.voice;
-                instructions = voiceData.instructions;
-                
-                // 動態更新選擇框以顯示推薦的聲音
-                if (voiceSelector && voice !== 'alloy') {
-                    voiceSelector.value = voice;
-                }
-                
-                console.log(`已選擇「${voice}」聲音`);
-            } catch (error) {
-                console.error('選擇語音失敗，使用用戶選擇的聲音:', error);
-            }
-        } else if (userSelectedVoice !== 'alloy' && emotion) {
-            // 用戶已選擇了特定聲音，但仍然生成指令
-            try {
-                const instructionsOnly = await generateVoiceInstructions(emotion, prayerText, userSelectedVoice);
-                instructions = instructionsOnly;
-            } catch (error) {
-                console.error('生成語音指令失敗:', error);
-            }
-        }
+        const text = decodeURIComponent(encodedText);
+        const instructions = encodedInstructions ? decodeURIComponent(encodedInstructions) : '';
         
         // 準備API請求體
         const requestBody = {
             model: "gpt-4o-mini-tts",
-            voice: voice,
-            input: prayerText,
+            voice: selectedVoice,
+            input: text,
             response_format: "mp3"
         };
         
@@ -695,3 +606,6 @@ async function playPrayer(encodedText, encodedEmotion = '') {
         spinner.style.display = 'none';
     }
 }
+
+// 初始化按鈕
+window.onload = initEmotions;
