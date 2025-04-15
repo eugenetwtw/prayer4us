@@ -292,7 +292,7 @@ async function generateEmotions(context) {
                 model: 'gpt-4.1-nano',
                 messages: [{
                     role: 'user',
-                    content: `根據以下情境提供5個${currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : '中文'}情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
+                    content: `參考以下情境提供5個${currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : '中文'}最近一般人常會有的情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
                     情境：${context}
                     範例輸出：${currentLanguage === 'en' ? 'Anxiety Sadness Loneliness Stress Joy ' + t('otherSituation') : 
                               currentLanguage === 'ja' ? '不安 悲しみ 孤独 ストレス 喜び ' + t('otherSituation') : 
