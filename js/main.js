@@ -265,7 +265,7 @@ function createLanguageSelector() {
 }
 
 // 用API生成情緒列表
-async function generateEmotions(context) {
+async function generateEmotions(context, isFirst = false) {
     if (!apiKey) {
         console.warn('API金鑰未設置，使用備用情緒列表');
         
@@ -277,8 +277,36 @@ async function generateEmotions(context) {
             'ja': ['不安', '悲しみ', '孤独', 'ストレス', '喜び', t('otherSituation')],
             'ko': ['불안', '슬픔', '외로움', '스트레스', '기쁨', t('otherSituation')]
         };
-        
-        return fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
+        let result = fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
+
+        // 新增功能：用餐前的禱告、與人小組聚會的禱告
+        if (isFirst) {
+            // 判斷是否用餐時間
+            const now = new Date();
+            const hour = now.getHours();
+            let mealPrayer = null;
+            if ((hour >= 5 && hour < 9) || (hour >= 11 && hour < 14) || (hour >= 17 && hour < 20)) {
+                mealPrayer = currentLanguage === 'en'
+                    ? 'Prayer before meal'
+                    : currentLanguage === 'ja'
+                        ? '食事前の祈り'
+                        : currentLanguage === 'ko'
+                            ? '식사 전 기도'
+                            : '用餐前的禱告';
+            }
+            const groupPrayer = currentLanguage === 'en'
+                ? 'Prayer for small group fellowship'
+                : currentLanguage === 'ja'
+                    ? '小グループ交わりの祈り'
+                    : currentLanguage === 'ko'
+                        ? '소그룹 모임을 위한 기도'
+                        : '與人小組聚會的禱告';
+
+            if (mealPrayer && !result.includes(mealPrayer)) result.push(mealPrayer);
+            if (!result.includes(groupPrayer)) result.push(groupPrayer);
+        }
+
+        return result;
     }
     
     try {
@@ -319,8 +347,37 @@ async function generateEmotions(context) {
         // 過濾已使用過的情緒
         const newEmotions = emotions.filter(e => !usedEmotions.has(e));
         newEmotions.forEach(e => usedEmotions.add(e));
-        
-        return newEmotions.slice(0, 5).concat(t('otherSituation'));
+
+        let result = newEmotions.slice(0, 5).concat(t('otherSituation'));
+
+        // 新增功能：用餐前的禱告、與人小組聚會的禱告
+        if (isFirst) {
+            // 判斷是否用餐時間
+            const now = new Date();
+            const hour = now.getHours();
+            let mealPrayer = null;
+            if ((hour >= 5 && hour < 9) || (hour >= 11 && hour < 14) || (hour >= 17 && hour < 20)) {
+                mealPrayer = currentLanguage === 'en'
+                    ? 'Prayer before meal'
+                    : currentLanguage === 'ja'
+                        ? '食事前の祈り'
+                        : currentLanguage === 'ko'
+                            ? '식사 전 기도'
+                            : '用餐前的禱告';
+            }
+            const groupPrayer = currentLanguage === 'en'
+                ? 'Prayer for small group fellowship'
+                : currentLanguage === 'ja'
+                    ? '小グループ交わりの祈り'
+                    : currentLanguage === 'ko'
+                        ? '소그룹 모임을 위한 기도'
+                        : '與人小組聚會的禱告';
+
+            if (mealPrayer && !result.includes(mealPrayer)) result.push(mealPrayer);
+            if (!result.includes(groupPrayer)) result.push(groupPrayer);
+        }
+
+        return result;
     } catch (error) {
         console.error('獲取情緒列表失敗:', error);
         // 根據語言返回不同的備用情緒列表
@@ -331,8 +388,36 @@ async function generateEmotions(context) {
             'ja': ['不安', '悲しみ', '孤独', 'ストレス', '喜び', t('otherSituation')],
             'ko': ['불안', '슬픔', '외로움', '스트레스', '기쁨', t('otherSituation')]
         };
-        
-        return fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
+        let result = fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
+
+        // 新增功能：用餐前的禱告、與人小組聚會的禱告
+        if (isFirst) {
+            // 判斷是否用餐時間
+            const now = new Date();
+            const hour = now.getHours();
+            let mealPrayer = null;
+            if ((hour >= 5 && hour < 9) || (hour >= 11 && hour < 14) || (hour >= 17 && hour < 20)) {
+                mealPrayer = currentLanguage === 'en'
+                    ? 'Prayer before meal'
+                    : currentLanguage === 'ja'
+                        ? '食事前の祈り'
+                        : currentLanguage === 'ko'
+                            ? '식사 전 기도'
+                            : '用餐前的禱告';
+            }
+            const groupPrayer = currentLanguage === 'en'
+                ? 'Prayer for small group fellowship'
+                : currentLanguage === 'ja'
+                    ? '小グループ交わりの祈り'
+                    : currentLanguage === 'ko'
+                        ? '소그룹 모임을 위한 기도'
+                        : '與人小組聚會的禱告';
+
+            if (mealPrayer && !result.includes(mealPrayer)) result.push(mealPrayer);
+            if (!result.includes(groupPrayer)) result.push(groupPrayer);
+        }
+
+        return result;
     }
 }
 
