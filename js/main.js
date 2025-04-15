@@ -289,7 +289,7 @@ async function generateEmotions(context) {
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'gpt-4o-mini',
+                model: 'gpt-4.1',
                 messages: [{
                     role: 'user',
                     content: `根據以下情境提供5個${currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : '中文'}情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
@@ -530,7 +530,7 @@ VOICE: [選擇的語音名稱，小寫]`;
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'gpt-4o-mini',
+                model: 'gpt-4.1',
                 messages: [{
                     role: 'user',
                     content: content
