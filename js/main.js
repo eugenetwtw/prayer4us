@@ -762,7 +762,7 @@ async function playPrayer(encodedText, encodedInstructions = '') {
         
         // 準備API請求體
         const requestBody = {
-            model: "gpt-4o-mini-tts",
+            model: "tts-1",
             voice: selectedVoice,
             input: text,
             response_format: "mp3"
