@@ -615,7 +615,7 @@ VOICE: [選擇的語音名稱，小寫]`;
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'gpt-4.1',
+                model: 'gpt-4.1-nano',
                 messages: [{
                     role: 'user',
                     content: content
