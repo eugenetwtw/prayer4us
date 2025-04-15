@@ -201,7 +201,7 @@ async function initEmotions() {
     };
     
     const prompt = promptByLang[currentLanguage] || promptByLang['zh-Hant'];
-    const firstEmotions = await generateEmotions(prompt);
+    const firstEmotions = await generateEmotions(prompt, true);
     emotionHistory.push(firstEmotions);
     createEmotionButtons(firstEmotions);
 }
