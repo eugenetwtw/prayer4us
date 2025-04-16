@@ -1,4 +1,18 @@
-// 獲取API金鑰
+/**
+ * 語系網址參數優先：如網址有 ?lang=zh-Hant 會直接切換語系，不再自動偵測
+ * 用法：https://yourdomain.com/?lang=zh-Hant
+ */
+function getLangFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('lang');
+}
+const urlLang = getLangFromUrl();
+if (urlLang && typeof setCurrentLanguage === 'function') {
+    setCurrentLanguage(urlLang);
+    localStorage.setItem('preferredLanguage', urlLang);
+}
+
+ // 獲取API金鑰
 let apiKey = '';
 let currentLanguage = '';
 
