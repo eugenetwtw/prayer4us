@@ -740,30 +740,49 @@ VOICE: [選擇的語音名稱，小寫]`;
     }
 }
 
-// 修改後的獲取經文函數
+/**
+ * 多段禱告詞管理
+ */
+let prayerSegments = []; // 每段格式：{text, voice, instructions, number}
+let prayerEmotion = '';  // 當前情緒
+let prayerMaxSegments = 4; // 最多段數
+
 // 倒數計時器變數
 let countdownInterval = null;
 let countdownSeconds = 0;
 
-async function getEmotionalVerse(emotion) {
+/**
+ * 產生新禱告段落（prepend到最上方）
+ * @param {string} emotion - 用戶情緒
+ * @param {boolean} isFirst - 是否為第一段
+ */
+async function getEmotionalVerse(emotion, isFirst = false) {
     if (!apiKey) {
         document.getElementById('verse').innerHTML = t('apiKeyNotSet');
         return;
     }
-    
+    if (isFirst) {
+        prayerSegments = [];
+        prayerEmotion = emotion;
+    }
+    // 計算第幾段
+    const segmentNumber = prayerSegments.length + 1;
+    // 設定禱告詞長度
+    let prayerLength = 100; // 預設100字以上
+    if (segmentNumber === 1) prayerLength = 120; // 約1分鐘
+    else if (segmentNumber === 2) prayerLength = 200; // 約1.5~2分鐘
+    else prayerLength = 250; // 2~2.5分鐘
+
     // 初始時先設置默認語音，稍後會根據禱告文內容再做選擇
     let voiceData = { voice: 'alloy', instructions: '' };
-    
+
     try {
         const verseElement = document.getElementById('verse');
-        
         // 開始倒數計時
         countdownSeconds = 0;
         verseElement.innerHTML = `${t('loadingVerse')} <span id="countdown-timer">(0)</span>`;
         verseElement.classList.add('loading-verse');
-        
-        // 設置倒數計時器
-        clearInterval(countdownInterval); // 清除之前的計時器
+        clearInterval(countdownInterval);
         countdownInterval = setInterval(() => {
             countdownSeconds++;
             const timerElement = document.getElementById('countdown-timer');
@@ -771,7 +790,8 @@ async function getEmotionalVerse(emotion) {
                 timerElement.textContent = `(${countdownSeconds})`;
             }
         }, 1000);
-        
+
+        // 產生禱告詞
         const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
             method: 'POST',
             headers: {
@@ -780,39 +800,31 @@ async function getEmotionalVerse(emotion) {
             },
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
-                messages: [{ 
+                messages: [{
                     role: 'user',
                     content: `請針對「${emotion}」情緒：
-                    1. 提供合適聖經經文(格式：『經文』書名 章:節)${currentLanguage === 'en' || currentLanguage === 'ja' || currentLanguage === 'ko' ? '只需' + (currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : '韓文') : '同時提出中英文'}
-                    2. 簡明的解說，50字內，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
-                    3. 禱告詞，100字以上，你是一個資深慈愛的牧師，同情用戶的狀態，深情地為用戶禱告，為用戶設身處地思考，祈求上帝給用戶安慰和力量，用華麗的辭藻，用詩歌般的語言，用最真摯的情感，寫出最感人的禱告詞，激發用戶的感受，讓靈性灌注與降臨，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
-                    請用以下格式回應：
-                    【${t('scripture').replace('：', '')}】{內容}
-                    【${t('explanation').replace('：', '')}】{解說}
-                    【${t('prayer').replace('：', '')}】{禱告詞}`
+1. 提供合適聖經經文(格式：『經文』書名 章:節)${currentLanguage === 'en' || currentLanguage === 'ja' || currentLanguage === 'ko' ? '只需' + (currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : '韓文') : '同時提出中英文'}
+2. 簡明的解說，50字內，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
+3. 禱告詞，${prayerLength}字以上，你是一個資深慈愛的牧師，同情用戶的狀態，深情地為用戶禱告，為用戶設身處地思考，祈求上帝給用戶安慰和力量，用華麗的辭藻，用詩歌般的語言，用最真摯的情感，寫出最感人的禱告詞，激發用戶的感受，讓靈性灌注與降臨，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
+請用以下格式回應：
+【${t('scripture').replace('：', '')}】{內容}
+【${t('explanation').replace('：', '')}】{解說}
+【${t('prayer').replace('：', '')}】{禱告詞}`
                 }],
-                max_tokens: 1000,
+                max_tokens: 1200,
                 temperature: 0.8
             })
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        
-        if (!data?.choices?.[0]?.message?.content) {
-            throw new Error('Invalid API response structure');
-        }
-
+        if (!data?.choices?.[0]?.message?.content) throw new Error('Invalid API response structure');
         const responseText = data.choices[0].message.content.trim();
-        
-        // 使用多行匹配，根據當前語言調整匹配模式
+
+        // 解析
         const scriptureKey = t('scripture').replace('：', '');
         const explanationKey = t('explanation').replace('：', '');
         const prayerKey = t('prayer').replace('：', '');
-        
         const verseMatch = responseText.match(new RegExp(`【${scriptureKey}】([\\s\\S]+?)\\n【${explanationKey}】`));
         const comfortMatch = responseText.match(new RegExp(`【${explanationKey}】([\\s\\S]+?)\\n【${prayerKey}】`));
         const prayerMatch = responseText.match(new RegExp(`【${prayerKey}】([\\s\\S]+)`));
@@ -820,75 +832,149 @@ async function getEmotionalVerse(emotion) {
         if (verseMatch && comfortMatch && prayerMatch) {
             const formatText = (text) => text.replace(/\n/g, '<br>');
             const prayerText = prayerMatch[1].trim();
-            
-            // 根據情緒和禱告文選擇適合的聲音和生成指令
+            // 取得語音建議
             try {
                 voiceData = await getVoiceAndInstructions(emotion, prayerText);
             } catch (error) {
                 console.error('選擇語音時出錯，使用默認語音:', error);
             }
-            
-            const selectedVoice = voiceData.voice;
-            const voiceInstructions = voiceData.instructions;
-            
+            // prepend 新段落
+            prayerSegments.unshift({
+                text: prayerText,
+                voice: voiceData.voice,
+                instructions: voiceData.instructions,
+                number: segmentNumber
+            });
             // 清除倒數計時器
             clearInterval(countdownInterval);
-            
-            const verseElement = document.getElementById('verse');
             verseElement.classList.remove('loading-verse');
-            verseElement.innerHTML = `
-                <div style="text-align: left; max-width: 600px; margin: 20px auto;">
-                    <h3 style="color: #2c3e50;">${t('verseForEmotion', { emotion })}</h3>
-                    <p style="font-size: 1.1em;">
-                        <strong>${t('scripture')}</strong><br>
-                        ${formatText(verseMatch[1].trim())}
-                    </p>
-                    <p style="color: #27ae60; margin-top: 20px;">
-                        <strong>${t('explanation')}</strong><br>
-                        ${formatText(comfortMatch[1].trim())}
-                    </p>
-                    <div id="audio-player" style="margin: 15px 0;">
-                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
-                            <button onclick="playPrayer('${encodeURIComponent(prayerText)}', '${encodeURIComponent(voiceInstructions)}')" id="play-button">
-                                <span id="play-text">${t('playPrayer')}</span>
-                                <span id="loading-spinner" style="display: none;">${t('generatingAudio')}</span>
-                            </button>
-                            <div style="margin-left: 15px; display: flex; align-items: center;">
-                                <span id="voice-selector-label" style="margin-right: 5px;">${t('voiceSelector')}:</span>
-                                <select id="voice-selector" style="padding: 5px; border-radius: 5px;">
-                                    <option value="alloy" ${selectedVoice === 'alloy' ? 'selected' : ''}>${t('alloy')}</option>
-                                    <option value="echo" ${selectedVoice === 'echo' ? 'selected' : ''}>${t('echo')}</option>
-                                    <option value="fable" ${selectedVoice === 'fable' ? 'selected' : ''}>${t('fable')}</option>
-                                    <option value="onyx" ${selectedVoice === 'onyx' ? 'selected' : ''}>${t('onyx')}</option>
-                                    <option value="nova" ${selectedVoice === 'nova' ? 'selected' : ''}>${t('nova')}</option>
-                                    <option value="shimmer" ${selectedVoice === 'shimmer' ? 'selected' : ''}>${t('shimmer')}</option>
-                                </select>
-                            </div>
-                        </div>
-                        <audio id="prayer-audio" controls style="display: none; margin-top: 10px; width: 100%;"></audio>
-                    </div>
-                    <p style="color: #2980b9; margin-top: 20px; line-height: 1.6;">
-                        <strong>${t('prayer')}</strong><br>
-                        ${formatText(prayerText)}
-                    </p>
-                </div>
-            `;
+            // 重新渲染所有段落
+            renderPrayerSegments(verseMatch[1].trim(), comfortMatch[1].trim());
         } else {
-            // 清除倒數計時器
             clearInterval(countdownInterval);
-            
             const verseElement = document.getElementById('verse');
             verseElement.classList.remove('loading-verse');
             verseElement.innerHTML = `${t('parseError')}<br>${responseText}`;
         }
     } catch (error) {
         console.error('錯誤：', error);
-        // 清除倒數計時器
         clearInterval(countdownInterval);
-        
         const verseElement = document.getElementById('verse');
         verseElement.classList.remove('loading-verse');
         verseElement.innerHTML = t('errorGettingVerse');
+    }
+}
+
+/**
+ * 渲染所有禱告段落
+ * @param {string} scripture - 經文
+ * @param {string} explanation - 解說
+ */
+function renderPrayerSegments(scripture, explanation) {
+    const verseElement = document.getElementById('verse');
+    // 段落區塊
+    let html = `
+        <div style="text-align: left; max-width: 600px; margin: 20px auto;">
+            <h3 style="color: #2c3e50;">${t('verseForEmotion', { emotion: prayerEmotion })}</h3>
+            <p style="font-size: 1.1em;">
+                <strong>${t('scripture')}</strong><br>
+                ${scripture.replace(/\n/g, '<br>')}
+            </p>
+            <p style="color: #27ae60; margin-top: 20px;">
+                <strong>${t('explanation')}</strong><br>
+                ${explanation.replace(/\n/g, '<br>')}
+            </p>
+        </div>
+    `;
+    // 禱告段落（最新在上）
+    prayerSegments.forEach((seg, idx) => {
+        html += `
+        <div style="background:#f8f9fa;border-radius:10px;padding:18px 16px 12px 16px;margin-bottom:18px;box-shadow:0 2px 8px #0001;">
+            <div style="font-weight:bold;color:#2c3e50;margin-bottom:8px;">禱告詞#${idx+1}</div>
+            <div style="color:#2980b9;line-height:1.7;margin-bottom:12px;">${seg.text.replace(/\n/g, '<br>')}</div>
+            <div id="audio-player-${idx}" style="margin-bottom:8px;">
+                <button onclick="playPrayerSegment(${idx})" id="play-button-${idx}">
+                    <span id="play-text-${idx}">${t('playPrayer')}</span>
+                    <span id="loading-spinner-${idx}" style="display:none;">${t('generatingAudio')}</span>
+                </button>
+                <span id="voice-selector-label-${idx}" style="margin-left:10px;">${t('voiceSelector')}:</span>
+                <select id="voice-selector-${idx}" style="padding:5px;border-radius:5px;">
+                    <option value="alloy" ${seg.voice === 'alloy' ? 'selected' : ''}>${t('alloy')}</option>
+                    <option value="echo" ${seg.voice === 'echo' ? 'selected' : ''}>${t('echo')}</option>
+                    <option value="fable" ${seg.voice === 'fable' ? 'selected' : ''}>${t('fable')}</option>
+                    <option value="onyx" ${seg.voice === 'onyx' ? 'selected' : ''}>${t('onyx')}</option>
+                    <option value="nova" ${seg.voice === 'nova' ? 'selected' : ''}>${t('nova')}</option>
+                    <option value="shimmer" ${seg.voice === 'shimmer' ? 'selected' : ''}>${t('shimmer')}</option>
+                </select>
+                <audio id="prayer-audio-${idx}" controls style="display:none;margin-top:10px;width:100%;"></audio>
+            </div>
+            ${idx === 0 && prayerSegments.length < prayerMaxSegments ? `
+                <div style="margin-top:8px;">
+                    <button onclick="getEmotionalVerse(prayerEmotion)">接續更長的禱告</button>
+                </div>
+            ` : ''}
+        </div>
+        `;
+    });
+    verseElement.innerHTML = html;
+}
+
+/**
+ * 播放指定段落的禱告詞
+ */
+async function playPrayerSegment(idx) {
+    if (!apiKey) {
+        alert(t('apiKeyNotSetAudio'));
+        return;
+    }
+    const seg = prayerSegments[idx];
+    const button = document.getElementById(`play-button-${idx}`);
+    const spinner = document.getElementById(`loading-spinner-${idx}`);
+    const playText = document.getElementById(`play-text-${idx}`);
+    const voiceSelector = document.getElementById(`voice-selector-${idx}`);
+    const selectedVoice = voiceSelector ? voiceSelector.value : seg.voice;
+
+    // 記錄音頻生成事件
+    await recordAudioGeneration(currentLanguage);
+
+    try {
+        button.disabled = true;
+        playText.style.display = 'none';
+        spinner.style.display = 'inline';
+
+        // 準備API請求體
+        const requestBody = {
+            model: "tts-1",
+            voice: selectedVoice,
+            input: seg.text,
+            response_format: "mp3"
+        };
+        if (seg.instructions) {
+            requestBody.instructions = seg.instructions;
+        }
+        const response = await fetch('https://api.openai.com/v1/audio/speech', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json',
+                'Accept': 'audio/mpeg'
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(new Blob([audioBlob], { type: 'audio/mpeg' }));
+        const audioElement = document.getElementById(`prayer-audio-${idx}`);
+        audioElement.src = audioUrl;
+        audioElement.style.display = 'block';
+        audioElement.play();
+    } catch (error) {
+        console.error('播放失敗:', error);
+        alert(t('audioPlayError'));
+    } finally {
+        button.disabled = false;
+        playText.style.display = 'inline';
+        spinner.style.display = 'none';
     }
 }
 
