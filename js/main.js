@@ -747,34 +747,9 @@ let prayerSegments = []; // 每段格式：{text, voice, instructions, number}
 let prayerEmotion = '';  // 當前情緒
 let prayerMaxSegments = 4; // 最多段數
 
- // 倒數計時器變數
+// 倒數計時器變數
 let countdownInterval = null;
 let countdownSeconds = 0;
-
-/**
- * 只在 #prayer-segments 最上方插入 loading 區塊，不清空舊段落
- */
-function renderPrayerLoading() {
-    const segmentsDiv = document.getElementById('prayer-segments');
-    if (!segmentsDiv) return;
-    if (document.getElementById('prayer-loading-block')) return; // 已存在就不重複插入
-    const html = `
-        <div id="prayer-loading-block" style="background:#fffbe6;border-radius:10px;padding:18px 16px 12px 16px;margin-bottom:18px;box-shadow:0 2px 8px #0001;">
-            <div style="font-weight:bold;color:#b8860b;margin-bottom:8px;">${t('loadingVerse')} <span id="prayer-loading-timer">(0)</span></div>
-        </div>
-    `;
-    segmentsDiv.insertAdjacentHTML('afterbegin', html);
-}
-
-/**
- * 移除 loading 區塊
- */
-function removePrayerLoading() {
-    const loadingBlock = document.getElementById('prayer-loading-block');
-    if (loadingBlock && loadingBlock.parentNode) {
-        loadingBlock.parentNode.removeChild(loadingBlock);
-    }
-}
 
 /**
  * 產生新禱告段落（prepend到最上方）
@@ -873,13 +848,11 @@ async function getEmotionalVerse(emotion, isFirst = false) {
             });
             // 清除倒數計時器
             clearInterval(countdownInterval);
-            // 移除 loading 區塊
-            removePrayerLoading();
-            // 渲染新段落
+            // 移除 loading 區塊並渲染所有段落
             renderPrayerSegments(verseMatch[1].trim(), comfortMatch[1].trim());
         } else {
             clearInterval(countdownInterval);
-            removePrayerLoading();
+            // 移除 loading 區塊並渲染所有段落
             renderPrayerSegments();
             const verseElement = document.getElementById('verse');
             verseElement.classList.remove('loading-verse');
@@ -888,7 +861,7 @@ async function getEmotionalVerse(emotion, isFirst = false) {
     } catch (error) {
         console.error('錯誤：', error);
         clearInterval(countdownInterval);
-        removePrayerLoading();
+        // 移除 loading 區塊並渲染所有段落
         renderPrayerSegments();
         const verseElement = document.getElementById('verse');
         verseElement.classList.remove('loading-verse');
@@ -903,149 +876,57 @@ async function getEmotionalVerse(emotion, isFirst = false) {
  */
 function renderPrayerSegments(scripture, explanation) {
     const verseElement = document.getElementById('verse');
-    // 第一次產生主題經文區與禱告詞段落區
-    if (!document.getElementById('prayer-main')) {
-        let html = '';
-        // 主題經文區
+    // 段落區塊
+    let html = '';
+    // 如果有主題經文與解說，顯示在最上方
+    if (typeof scripture === 'string' && typeof explanation === 'string') {
         html += `
-            <div id="prayer-main" style="text-align: left; max-width: 600px; margin: 20px auto;">
+            <div style="text-align: left; max-width: 600px; margin: 20px auto;">
                 <h3 style="color: #2c3e50;">${t('verseForEmotion', { emotion: prayerEmotion })}</h3>
                 <p style="font-size: 1.1em;">
                     <strong>${t('scripture')}</strong><br>
-                    ${typeof scripture === 'string' ? scripture.replace(/\n/g, '<br>') : ''}
+                    ${scripture.replace(/\n/g, '<br>')}
                 </p>
                 <p style="color: #27ae60; margin-top: 20px;">
                     <strong>${t('explanation')}</strong><br>
-                    ${typeof explanation === 'string' ? explanation.replace(/\n/g, '<br>') : ''}
+                    ${explanation.replace(/\n/g, '<br>')}
                 </p>
             </div>
-            <div id="prayer-segments"></div>
         `;
-        verseElement.innerHTML = html;
     }
-    // 若已存在主題經文區，僅更新主題經文內容（如語系切換）
-    else if (typeof scripture === 'string' && typeof explanation === 'string') {
-        const main = document.getElementById('prayer-main');
-        main.querySelector('h3').textContent = t('verseForEmotion', { emotion: prayerEmotion });
-        main.querySelector('strong').textContent = t('scripture');
-        main.querySelectorAll('p')[0].innerHTML = `<strong>${t('scripture')}</strong><br>${scripture.replace(/\n/g, '<br>')}`;
-        main.querySelectorAll('p')[1].innerHTML = `<strong>${t('explanation')}</strong><br>${explanation.replace(/\n/g, '<br>')}`;
-    }
-    // 若只是 append 新段落，不動主題經文區
-
-    // 若是第一次產生禱告詞段落，清空 segments
-    const segmentsDiv = document.getElementById('prayer-segments');
-    if (!segmentsDiv) return;
-
-    // 每次都完整渲染所有段落（最新在上方）
-    // 先清空 segmentsDiv
-    while (segmentsDiv.firstChild) {
-        segmentsDiv.removeChild(segmentsDiv.firstChild);
-    }
-    for (let i = 0; i < prayerSegments.length; i++) {
-        const seg = prayerSegments[i];
-        const idx = i;
-        const displayNumber = prayerSegments.length - i;
-
-        // 建立新段落 DOM
-        const segDiv = document.createElement('div');
-        segDiv.style.background = '#f8f9fa';
-        segDiv.style.borderRadius = '10px';
-        segDiv.style.padding = '18px 16px 12px 16px';
-        segDiv.style.marginBottom = '18px';
-        segDiv.style.boxShadow = '0 2px 8px #0001';
-
-        // 標題
-        const labelDiv = document.createElement('div');
-        labelDiv.style.fontWeight = 'bold';
-        labelDiv.style.color = '#2c3e50';
-        labelDiv.style.marginBottom = '8px';
-        labelDiv.textContent = `${t('prayerLabel')}#${displayNumber}`;
-        segDiv.appendChild(labelDiv);
-
-        // 內容
-        const contentDiv = document.createElement('div');
-        contentDiv.style.color = '#2980b9';
-        contentDiv.style.lineHeight = '1.7';
-        contentDiv.style.marginBottom = '12px';
-        contentDiv.innerHTML = seg.text.replace(/\n/g, '<br>');
-        segDiv.appendChild(contentDiv);
-
-        // audio player 區塊
-        const audioDiv = document.createElement('div');
-        audioDiv.id = `audio-player-${idx}`;
-        audioDiv.style.marginBottom = '8px';
-
-        // 播放按鈕
-        const playBtn = document.createElement('button');
-        playBtn.id = `play-button-${idx}`;
-        playBtn.onclick = () => playPrayerSegment(idx);
-
-        const playText = document.createElement('span');
-        playText.id = `play-text-${idx}`;
-        playText.textContent = t('playPrayer');
-        playBtn.appendChild(playText);
-
-        const spinner = document.createElement('span');
-        spinner.id = `loading-spinner-${idx}`;
-        spinner.style.display = 'none';
-        spinner.textContent = t('generatingAudio');
-        playBtn.appendChild(spinner);
-
-        audioDiv.appendChild(playBtn);
-
-        // 語音選擇器
-        const voiceLabel = document.createElement('span');
-        voiceLabel.id = `voice-selector-label-${idx}`;
-        voiceLabel.style.marginLeft = '10px';
-        voiceLabel.textContent = t('voiceSelector') + ':';
-        audioDiv.appendChild(voiceLabel);
-
-        const voiceSelector = document.createElement('select');
-        voiceSelector.id = `voice-selector-${idx}`;
-        voiceSelector.style.padding = '5px';
-        voiceSelector.style.borderRadius = '5px';
-        [
-            { value: 'alloy', label: t('alloy') },
-            { value: 'echo', label: t('echo') },
-            { value: 'fable', label: t('fable') },
-            { value: 'onyx', label: t('onyx') },
-            { value: 'nova', label: t('nova') },
-            { value: 'shimmer', label: t('shimmer') }
-        ].forEach(opt => {
-            const option = document.createElement('option');
-            option.value = opt.value;
-            option.textContent = opt.label;
-            if (seg.voice === opt.value) option.selected = true;
-            voiceSelector.appendChild(option);
-        });
-        audioDiv.appendChild(voiceSelector);
-
-        // audio element
-        const audioEl = document.createElement('audio');
-        audioEl.id = `prayer-audio-${idx}`;
-        audioEl.controls = true;
-        audioEl.style.display = 'none';
-        audioEl.style.marginTop = '10px';
-        audioEl.style.width = '100%';
-        audioDiv.appendChild(audioEl);
-
-        segDiv.appendChild(audioDiv);
-
-        // 「接續更長的禱告」按鈕（只在最上方一段顯示）
-        if (i === 0 && prayerSegments.length < prayerMaxSegments) {
-            const moreDiv = document.createElement('div');
-            moreDiv.style.marginTop = '8px';
-            const moreBtn = document.createElement('button');
-            moreBtn.onclick = () => getEmotionalVerse(prayerEmotion);
-            moreBtn.textContent = t('continuePrayer');
-            moreDiv.appendChild(moreBtn);
-            segDiv.appendChild(moreDiv);
-        }
-
-        // append 段落（最新在上方）
-        segmentsDiv.appendChild(segDiv);
-    }
+    // 禱告段落（最新在上）
+    prayerSegments.forEach((seg, idx) => {
+        // 反向編號：最下方是#1，最上方是#N
+        const displayNumber = prayerSegments.length - idx;
+        html += `
+        <div style="background:#f8f9fa;border-radius:10px;padding:18px 16px 12px 16px;margin-bottom:18px;box-shadow:0 2px 8px #0001;">
+            <div style="font-weight:bold;color:#2c3e50;margin-bottom:8px;">${t('prayerLabel')}#${displayNumber}</div>
+            <div style="color:#2980b9;line-height:1.7;margin-bottom:12px;">${seg.text.replace(/\n/g, '<br>')}</div>
+            <div id="audio-player-${idx}" style="margin-bottom:8px;">
+                <button onclick="playPrayerSegment(${idx})" id="play-button-${idx}">
+                    <span id="play-text-${idx}">${t('playPrayer')}</span>
+                    <span id="loading-spinner-${idx}" style="display:none;">${t('generatingAudio')}</span>
+                </button>
+                <span id="voice-selector-label-${idx}" style="margin-left:10px;">${t('voiceSelector')}:</span>
+                <select id="voice-selector-${idx}" style="padding:5px;border-radius:5px;">
+                    <option value="alloy" ${seg.voice === 'alloy' ? 'selected' : ''}>${t('alloy')}</option>
+                    <option value="echo" ${seg.voice === 'echo' ? 'selected' : ''}>${t('echo')}</option>
+                    <option value="fable" ${seg.voice === 'fable' ? 'selected' : ''}>${t('fable')}</option>
+                    <option value="onyx" ${seg.voice === 'onyx' ? 'selected' : ''}>${t('onyx')}</option>
+                    <option value="nova" ${seg.voice === 'nova' ? 'selected' : ''}>${t('nova')}</option>
+                    <option value="shimmer" ${seg.voice === 'shimmer' ? 'selected' : ''}>${t('shimmer')}</option>
+                </select>
+                <audio id="prayer-audio-${idx}" controls style="display:none;margin-top:10px;width:100%;"></audio>
+            </div>
+            ${idx === 0 && prayerSegments.length < prayerMaxSegments ? `
+                <div style="margin-top:8px;">
+                    <button onclick="getEmotionalVerse(prayerEmotion)">${t('continuePrayer')}</button>
+                </div>
+            ` : ''}
+        </div>
+        `;
+    });
+    verseElement.innerHTML = html;
 }
 
 /**
