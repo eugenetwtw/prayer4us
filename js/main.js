@@ -509,7 +509,7 @@ function createEmotionButtons(emotions) {
                emotion === '다른 상황이 있어요') {
                 loadMoreEmotions();
             } else {
-                getEmotionalVerse(emotion);
+                getEmotionalVerse(emotion, true);
             }
         };
         if (emotion === t('otherSituation') || 
@@ -592,7 +592,7 @@ function showCustomEmotionInput() {
 function submitCustomEmotion() {
     const customEmotion = document.getElementById('customEmotionInput').value.trim();
     if (customEmotion) {
-        getEmotionalVerse(customEmotion);
+        getEmotionalVerse(customEmotion, true);
     } else {
         alert('請輸入您的困難狀況');
     }
