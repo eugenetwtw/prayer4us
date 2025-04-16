@@ -181,16 +181,72 @@ let emotionHistory = []; // 用於記錄情緒列表歷史
 let usedEmotions = new Set(); // 記錄已使用過的情緒
 let otherSituationClickCount = 0; // 追蹤「我有其他狀況」按鈕點擊次數
 
+/**
+ * 在主畫面下方持久顯示自定義情緒輸入框（不會清空情緒按鈕）
+ */
+function renderPersistentCustomEmotionInput() {
+    // 檢查是否已經存在
+    if (document.getElementById('persistentCustomEmotionInputContainer')) return;
+
+    const container = document.getElementById('mainEmotions');
+    // 創建輸入框容器
+    const inputContainer = document.createElement('div');
+    inputContainer.id = 'persistentCustomEmotionInputContainer';
+    inputContainer.style.margin = '20px auto';
+    inputContainer.style.maxWidth = '500px';
+    inputContainer.style.borderTop = '1px solid #eee';
+    inputContainer.style.paddingTop = '20px';
+
+    const label = document.createElement('p');
+    label.textContent = t('customEmotionLabel');
+    label.style.marginBottom = '10px';
+    label.style.fontWeight = 'bold';
+
+    const textarea = document.createElement('textarea');
+    textarea.id = 'persistentCustomEmotionInput';
+    textarea.style.width = '100%';
+    textarea.style.minHeight = '100px';
+    textarea.style.padding = '10px';
+    textarea.style.borderRadius = '8px';
+    textarea.style.border = '1px solid #ccc';
+    textarea.style.marginBottom = '15px';
+    textarea.style.fontFamily = 'inherit';
+
+    const submitBtn = document.createElement('button');
+    submitBtn.textContent = t('submitButton');
+    submitBtn.style.backgroundColor = '#2196F3';
+    submitBtn.onclick = function() {
+        const customEmotion = textarea.value.trim();
+        if (customEmotion) {
+            getEmotionalVerse(customEmotion);
+        } else {
+            alert('請輸入您的困難狀況');
+        }
+    };
+
+    const resetBtn = document.createElement('button');
+    resetBtn.textContent = t('resetButton');
+    resetBtn.style.backgroundColor = '#666';
+    resetBtn.onclick = resetEmotionSelection;
+
+    inputContainer.appendChild(label);
+    inputContainer.appendChild(textarea);
+    inputContainer.appendChild(submitBtn);
+    inputContainer.appendChild(resetBtn);
+
+    container.appendChild(inputContainer);
+}
+
 // 初始化獲取首頁情緒
 async function initEmotions() {
     await loadApiKey();
-    
+
     // 創建語言選擇器
     createLanguageSelector();
-    
+
     // 記錄訪問
     await recordVisit(currentLanguage);
-    
+
     // 獲取情緒列表
     const promptByLang = {
         'zh-Hant': '首次訪問，請推薦5個常見的情緒狀態',
@@ -199,11 +255,12 @@ async function initEmotions() {
         'ja': '初回訪問、一般的な感情状態を5つ推薦してください',
         'ko': '첫 방문, 일반적인 감정 상태 5가지를 추천해 주세요'
     };
-    
+
     const prompt = promptByLang[currentLanguage] || promptByLang['zh-Hant'];
     const firstEmotions = await generateEmotions(prompt, true);
     emotionHistory.push(firstEmotions);
     createEmotionButtons(firstEmotions);
+    renderPersistentCustomEmotionInput();
 }
 
 // 創建語言選擇器
