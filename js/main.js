@@ -892,7 +892,7 @@ function renderPrayerSegments(scripture, explanation) {
         const displayNumber = prayerSegments.length - idx;
         html += `
         <div style="background:#f8f9fa;border-radius:10px;padding:18px 16px 12px 16px;margin-bottom:18px;box-shadow:0 2px 8px #0001;">
-            <div style="font-weight:bold;color:#2c3e50;margin-bottom:8px;">禱告詞#${displayNumber}</div>
+            <div style="font-weight:bold;color:#2c3e50;margin-bottom:8px;">${t('prayerLabel')}#${displayNumber}</div>
             <div style="color:#2980b9;line-height:1.7;margin-bottom:12px;">${seg.text.replace(/\n/g, '<br>')}</div>
             <div id="audio-player-${idx}" style="margin-bottom:8px;">
                 <button onclick="playPrayerSegment(${idx})" id="play-button-${idx}">
@@ -912,7 +912,7 @@ function renderPrayerSegments(scripture, explanation) {
             </div>
             ${idx === 0 && prayerSegments.length < prayerMaxSegments ? `
                 <div style="margin-top:8px;">
-                    <button onclick="getEmotionalVerse(prayerEmotion)">接續更長的禱告</button>
+                    <button onclick="getEmotionalVerse(prayerEmotion)">${t('continuePrayer')}</button>
                 </div>
             ` : ''}
         </div>

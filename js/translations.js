@@ -5,7 +5,7 @@ const translations = {
         title: '我陪您禱告',
         backButton: '↩ 上一個情緒列表',
         loadingEmotions: '⏳ 正在尋找更多情緒...',
-        customEmotionLabel: '或在下面輸入您目前的狀況：',
+        customEmotionLabel: '請描述您目前的困難狀況：',
         submitButton: '提交',
         resetButton: '重新選擇情緒',
         otherSituation: '我有其他狀況',
@@ -28,14 +28,16 @@ const translations = {
         audioPlayError: '無法播放音頻，請稍後再試',
         parseError: '⚠️ 未能解析回應，以下是原始內容：',
         apiKeyNotSetAudio: 'API金鑰未設置，無法播放音頻',
-        languageSelector: 'Language'
+        languageSelector: 'Language',
+        continuePrayer: '接續更長的禱告',
+        prayerLabel: '禱告詞'
     },
     // Simplified Chinese
     'zh-Hans': {
         title: '我陪您祷告',
         backButton: '↩ 上一个情绪列表',
         loadingEmotions: '⏳ 正在寻找更多情绪...',
-        customEmotionLabel: '或在下面输入您目前的状况：',
+        customEmotionLabel: '请描述您目前的困难状况：',
         submitButton: '提交',
         resetButton: '重新选择情绪',
         otherSituation: '我有其他状况',
@@ -58,14 +60,16 @@ const translations = {
         audioPlayError: '无法播放音频，请稍后再试',
         parseError: '⚠️ 未能解析响应，以下是原始内容：',
         apiKeyNotSetAudio: 'API密钥未设置，无法播放音频',
-        languageSelector: 'Language'
+        languageSelector: 'Language',
+        continuePrayer: '继续更长的祷告',
+        prayerLabel: '祷告词'
     },
     // English
     'en': {
         title: 'Let me Pray With You',
         backButton: '↩ Previous Emotions',
         loadingEmotions: '⏳ Finding more emotions...',
-        customEmotionLabel: 'Or, please describe your current situation:',
+        customEmotionLabel: 'Please describe your current situation:',
         submitButton: 'Submit',
         resetButton: 'Reset Emotion Selection',
         otherSituation: 'I have another situation',
@@ -88,7 +92,9 @@ const translations = {
         audioPlayError: 'Cannot play audio, please try again later',
         parseError: '⚠️ Could not parse response, here is the original content:',
         apiKeyNotSetAudio: 'API key not set, cannot play audio',
-        languageSelector: 'Language'
+        languageSelector: 'Language',
+        continuePrayer: 'Continue with a longer prayer',
+        prayerLabel: 'Prayer'
     },
     // Japanese
     'ja': {
@@ -118,7 +124,9 @@ const translations = {
         audioPlayError: '音声を再生できません、後でもう一度お試しください',
         parseError: '⚠️ 応答を解析できませんでした、以下は元のコンテンツです：',
         apiKeyNotSetAudio: 'APIキーが設定されていません、音声を再生できません',
-        languageSelector: 'Language'
+        languageSelector: 'Language',
+        continuePrayer: 'さらに長い祈りを続ける',
+        prayerLabel: '祈り'
     },
     // Korean
     'ko': {
@@ -148,7 +156,9 @@ const translations = {
         audioPlayError: '오디오를 재생할 수 없습니다. 나중에 다시 시도해 주세요',
         parseError: '⚠️ 응답을 분석할 수 없습니다. 다음은 원본 내용입니다:',
         apiKeyNotSetAudio: 'API 키가 설정되지 않았습니다. 오디오를 재생할 수 없습니다',
-        languageSelector: 'Language'
+        languageSelector: 'Language',
+        continuePrayer: '더 긴 기도를 이어가기',
+        prayerLabel: '기도'
     }
 };
 
