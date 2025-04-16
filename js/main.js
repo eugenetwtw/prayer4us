@@ -942,35 +942,105 @@ function renderPrayerSegments(scripture, explanation) {
         const seg = prayerSegments[0];
         const idx = 0;
         const displayNumber = prayerSegments.length;
-        const segHtml = `
-        <div style="background:#f8f9fa;border-radius:10px;padding:18px 16px 12px 16px;margin-bottom:18px;box-shadow:0 2px 8px #0001;">
-            <div style="font-weight:bold;color:#2c3e50;margin-bottom:8px;">${t('prayerLabel')}#${displayNumber}</div>
-            <div style="color:#2980b9;line-height:1.7;margin-bottom:12px;">${seg.text.replace(/\n/g, '<br>')}</div>
-            <div id="audio-player-${idx}" style="margin-bottom:8px;">
-                <button onclick="playPrayerSegment(${idx})" id="play-button-${idx}">
-                    <span id="play-text-${idx}">${t('playPrayer')}</span>
-                    <span id="loading-spinner-${idx}" style="display:none;">${t('generatingAudio')}</span>
-                </button>
-                <span id="voice-selector-label-${idx}" style="margin-left:10px;">${t('voiceSelector')}:</span>
-                <select id="voice-selector-${idx}" style="padding:5px;border-radius:5px;">
-                    <option value="alloy" ${seg.voice === 'alloy' ? 'selected' : ''}>${t('alloy')}</option>
-                    <option value="echo" ${seg.voice === 'echo' ? 'selected' : ''}>${t('echo')}</option>
-                    <option value="fable" ${seg.voice === 'fable' ? 'selected' : ''}>${t('fable')}</option>
-                    <option value="onyx" ${seg.voice === 'onyx' ? 'selected' : ''}>${t('onyx')}</option>
-                    <option value="nova" ${seg.voice === 'nova' ? 'selected' : ''}>${t('nova')}</option>
-                    <option value="shimmer" ${seg.voice === 'shimmer' ? 'selected' : ''}>${t('shimmer')}</option>
-                </select>
-                <audio id="prayer-audio-${idx}" controls style="display:none;margin-top:10px;width:100%;"></audio>
-            </div>
-            ${prayerSegments.length < prayerMaxSegments ? `
-                <div style="margin-top:8px;">
-                    <button onclick="getEmotionalVerse(prayerEmotion)">${t('continuePrayer')}</button>
-                </div>
-            ` : ''}
-        </div>
-        `;
+
+        // 建立新段落 DOM
+        const segDiv = document.createElement('div');
+        segDiv.style.background = '#f8f9fa';
+        segDiv.style.borderRadius = '10px';
+        segDiv.style.padding = '18px 16px 12px 16px';
+        segDiv.style.marginBottom = '18px';
+        segDiv.style.boxShadow = '0 2px 8px #0001';
+
+        // 標題
+        const labelDiv = document.createElement('div');
+        labelDiv.style.fontWeight = 'bold';
+        labelDiv.style.color = '#2c3e50';
+        labelDiv.style.marginBottom = '8px';
+        labelDiv.textContent = `${t('prayerLabel')}#${displayNumber}`;
+        segDiv.appendChild(labelDiv);
+
+        // 內容
+        const contentDiv = document.createElement('div');
+        contentDiv.style.color = '#2980b9';
+        contentDiv.style.lineHeight = '1.7';
+        contentDiv.style.marginBottom = '12px';
+        contentDiv.innerHTML = seg.text.replace(/\n/g, '<br>');
+        segDiv.appendChild(contentDiv);
+
+        // audio player 區塊
+        const audioDiv = document.createElement('div');
+        audioDiv.id = `audio-player-${idx}`;
+        audioDiv.style.marginBottom = '8px';
+
+        // 播放按鈕
+        const playBtn = document.createElement('button');
+        playBtn.id = `play-button-${idx}`;
+        playBtn.onclick = () => playPrayerSegment(idx);
+
+        const playText = document.createElement('span');
+        playText.id = `play-text-${idx}`;
+        playText.textContent = t('playPrayer');
+        playBtn.appendChild(playText);
+
+        const spinner = document.createElement('span');
+        spinner.id = `loading-spinner-${idx}`;
+        spinner.style.display = 'none';
+        spinner.textContent = t('generatingAudio');
+        playBtn.appendChild(spinner);
+
+        audioDiv.appendChild(playBtn);
+
+        // 語音選擇器
+        const voiceLabel = document.createElement('span');
+        voiceLabel.id = `voice-selector-label-${idx}`;
+        voiceLabel.style.marginLeft = '10px';
+        voiceLabel.textContent = t('voiceSelector') + ':';
+        audioDiv.appendChild(voiceLabel);
+
+        const voiceSelector = document.createElement('select');
+        voiceSelector.id = `voice-selector-${idx}`;
+        voiceSelector.style.padding = '5px';
+        voiceSelector.style.borderRadius = '5px';
+        [
+            { value: 'alloy', label: t('alloy') },
+            { value: 'echo', label: t('echo') },
+            { value: 'fable', label: t('fable') },
+            { value: 'onyx', label: t('onyx') },
+            { value: 'nova', label: t('nova') },
+            { value: 'shimmer', label: t('shimmer') }
+        ].forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt.value;
+            option.textContent = opt.label;
+            if (seg.voice === opt.value) option.selected = true;
+            voiceSelector.appendChild(option);
+        });
+        audioDiv.appendChild(voiceSelector);
+
+        // audio element
+        const audioEl = document.createElement('audio');
+        audioEl.id = `prayer-audio-${idx}`;
+        audioEl.controls = true;
+        audioEl.style.display = 'none';
+        audioEl.style.marginTop = '10px';
+        audioEl.style.width = '100%';
+        audioDiv.appendChild(audioEl);
+
+        segDiv.appendChild(audioDiv);
+
+        // 「接續更長的禱告」按鈕
+        if (prayerSegments.length < prayerMaxSegments) {
+            const moreDiv = document.createElement('div');
+            moreDiv.style.marginTop = '8px';
+            const moreBtn = document.createElement('button');
+            moreBtn.onclick = () => getEmotionalVerse(prayerEmotion);
+            moreBtn.textContent = t('continuePrayer');
+            moreDiv.appendChild(moreBtn);
+            segDiv.appendChild(moreDiv);
+        }
+
         // prepend 新段落
-        segmentsDiv.insertAdjacentHTML('afterbegin', segHtml);
+        segmentsDiv.insertBefore(segDiv, segmentsDiv.firstChild);
     }
 }
 
