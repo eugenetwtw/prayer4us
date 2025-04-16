@@ -778,14 +778,16 @@ async function getEmotionalVerse(emotion, isFirst = false) {
 
     try {
         const verseElement = document.getElementById('verse');
+        // loading區塊只顯示在最上方，舊禱告詞不消失
+        renderPrayerLoading();
+        renderPrayerSegments();
+
         // 開始倒數計時
         countdownSeconds = 0;
-        verseElement.innerHTML = `${t('loadingVerse')} <span id="countdown-timer">(0)</span>`;
-        verseElement.classList.add('loading-verse');
         clearInterval(countdownInterval);
         countdownInterval = setInterval(() => {
             countdownSeconds++;
-            const timerElement = document.getElementById('countdown-timer');
+            const timerElement = document.getElementById('prayer-loading-timer');
             if (timerElement) {
                 timerElement.textContent = `(${countdownSeconds})`;
             }
@@ -847,11 +849,12 @@ async function getEmotionalVerse(emotion, isFirst = false) {
             });
             // 清除倒數計時器
             clearInterval(countdownInterval);
-            verseElement.classList.remove('loading-verse');
-            // 重新渲染所有段落
+            // 移除 loading 區塊並渲染所有段落
             renderPrayerSegments(verseMatch[1].trim(), comfortMatch[1].trim());
         } else {
             clearInterval(countdownInterval);
+            // 移除 loading 區塊並渲染所有段落
+            renderPrayerSegments();
             const verseElement = document.getElementById('verse');
             verseElement.classList.remove('loading-verse');
             verseElement.innerHTML = `${t('parseError')}<br>${responseText}`;
@@ -859,6 +862,8 @@ async function getEmotionalVerse(emotion, isFirst = false) {
     } catch (error) {
         console.error('錯誤：', error);
         clearInterval(countdownInterval);
+        // 移除 loading 區塊並渲染所有段落
+        renderPrayerSegments();
         const verseElement = document.getElementById('verse');
         verseElement.classList.remove('loading-verse');
         verseElement.innerHTML = t('errorGettingVerse');
@@ -873,19 +878,23 @@ async function getEmotionalVerse(emotion, isFirst = false) {
 function renderPrayerSegments(scripture, explanation) {
     const verseElement = document.getElementById('verse');
     // 段落區塊
-    let html = `
-        <div style="text-align: left; max-width: 600px; margin: 20px auto;">
-            <h3 style="color: #2c3e50;">${t('verseForEmotion', { emotion: prayerEmotion })}</h3>
-            <p style="font-size: 1.1em;">
-                <strong>${t('scripture')}</strong><br>
-                ${scripture.replace(/\n/g, '<br>')}
-            </p>
-            <p style="color: #27ae60; margin-top: 20px;">
-                <strong>${t('explanation')}</strong><br>
-                ${explanation.replace(/\n/g, '<br>')}
-            </p>
-        </div>
-    `;
+    let html = '';
+    // 如果有主題經文與解說，顯示在最上方
+    if (typeof scripture === 'string' && typeof explanation === 'string') {
+        html += `
+            <div style="text-align: left; max-width: 600px; margin: 20px auto;">
+                <h3 style="color: #2c3e50;">${t('verseForEmotion', { emotion: prayerEmotion })}</h3>
+                <p style="font-size: 1.1em;">
+                    <strong>${t('scripture')}</strong><br>
+                    ${scripture.replace(/\n/g, '<br>')}
+                </p>
+                <p style="color: #27ae60; margin-top: 20px;">
+                    <strong>${t('explanation')}</strong><br>
+                    ${explanation.replace(/\n/g, '<br>')}
+                </p>
+            </div>
+        `;
+    }
     // 禱告段落（最新在上）
     prayerSegments.forEach((seg, idx) => {
         // 反向編號：最下方是#1，最上方是#N
@@ -915,6 +924,46 @@ function renderPrayerSegments(scripture, explanation) {
                     <button onclick="getEmotionalVerse(prayerEmotion)">${t('continuePrayer')}</button>
                 </div>
             ` : ''}
+        </div>
+        `;
+    });
+    verseElement.innerHTML = html;
+}
+
+/**
+ * 只渲染 loading 區塊（不清空舊禱告詞）
+ */
+function renderPrayerLoading() {
+    const verseElement = document.getElementById('verse');
+    // loading 區塊插在最上方
+    let html = `
+        <div id="prayer-loading-block" style="background:#fffbe6;border-radius:10px;padding:18px 16px 12px 16px;margin-bottom:18px;box-shadow:0 2px 8px #0001;">
+            <div style="font-weight:bold;color:#b8860b;margin-bottom:8px;">${t('loadingVerse')} <span id="prayer-loading-timer">(0)</span></div>
+        </div>
+    `;
+    // 舊禱告詞段落
+    prayerSegments.forEach((seg, idx) => {
+        const displayNumber = prayerSegments.length - idx;
+        html += `
+        <div style="background:#f8f9fa;border-radius:10px;padding:18px 16px 12px 16px;margin-bottom:18px;box-shadow:0 2px 8px #0001;">
+            <div style="font-weight:bold;color:#2c3e50;margin-bottom:8px;">${t('prayerLabel')}#${displayNumber}</div>
+            <div style="color:#2980b9;line-height:1.7;margin-bottom:12px;">${seg.text.replace(/\n/g, '<br>')}</div>
+            <div id="audio-player-${idx}" style="margin-bottom:8px;">
+                <button onclick="playPrayerSegment(${idx})" id="play-button-${idx}">
+                    <span id="play-text-${idx}">${t('playPrayer')}</span>
+                    <span id="loading-spinner-${idx}" style="display:none;">${t('generatingAudio')}</span>
+                </button>
+                <span id="voice-selector-label-${idx}" style="margin-left:10px;">${t('voiceSelector')}:</span>
+                <select id="voice-selector-${idx}" style="padding:5px;border-radius:5px;">
+                    <option value="alloy" ${seg.voice === 'alloy' ? 'selected' : ''}>${t('alloy')}</option>
+                    <option value="echo" ${seg.voice === 'echo' ? 'selected' : ''}>${t('echo')}</option>
+                    <option value="fable" ${seg.voice === 'fable' ? 'selected' : ''}>${t('fable')}</option>
+                    <option value="onyx" ${seg.voice === 'onyx' ? 'selected' : ''}>${t('onyx')}</option>
+                    <option value="nova" ${seg.voice === 'nova' ? 'selected' : ''}>${t('nova')}</option>
+                    <option value="shimmer" ${seg.voice === 'shimmer' ? 'selected' : ''}>${t('shimmer')}</option>
+                </select>
+                <audio id="prayer-audio-${idx}" controls style="display:none;margin-top:10px;width:100%;"></audio>
+            </div>
         </div>
         `;
     });
