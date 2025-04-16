@@ -937,11 +937,15 @@ function renderPrayerSegments(scripture, explanation) {
     const segmentsDiv = document.getElementById('prayer-segments');
     if (!segmentsDiv) return;
 
-    // 只渲染新段落（最新在上方）
-    if (prayerSegments.length > 0) {
-        const seg = prayerSegments[0];
-        const idx = 0;
-        const displayNumber = prayerSegments.length;
+    // 每次都完整渲染所有段落（最新在上方）
+    // 先清空 segmentsDiv
+    while (segmentsDiv.firstChild) {
+        segmentsDiv.removeChild(segmentsDiv.firstChild);
+    }
+    for (let i = 0; i < prayerSegments.length; i++) {
+        const seg = prayerSegments[i];
+        const idx = i;
+        const displayNumber = prayerSegments.length - i;
 
         // 建立新段落 DOM
         const segDiv = document.createElement('div');
@@ -1028,8 +1032,8 @@ function renderPrayerSegments(scripture, explanation) {
 
         segDiv.appendChild(audioDiv);
 
-        // 「接續更長的禱告」按鈕
-        if (prayerSegments.length < prayerMaxSegments) {
+        // 「接續更長的禱告」按鈕（只在最上方一段顯示）
+        if (i === 0 && prayerSegments.length < prayerMaxSegments) {
             const moreDiv = document.createElement('div');
             moreDiv.style.marginTop = '8px';
             const moreBtn = document.createElement('button');
@@ -1039,8 +1043,8 @@ function renderPrayerSegments(scripture, explanation) {
             segDiv.appendChild(moreDiv);
         }
 
-        // prepend 新段落
-        segmentsDiv.insertBefore(segDiv, segmentsDiv.firstChild);
+        // append 段落（最新在上方）
+        segmentsDiv.appendChild(segDiv);
     }
 }
 
