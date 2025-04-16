@@ -747,9 +747,34 @@ let prayerSegments = []; // 每段格式：{text, voice, instructions, number}
 let prayerEmotion = '';  // 當前情緒
 let prayerMaxSegments = 4; // 最多段數
 
-// 倒數計時器變數
+ // 倒數計時器變數
 let countdownInterval = null;
 let countdownSeconds = 0;
+
+/**
+ * 只在 #prayer-segments 最上方插入 loading 區塊，不清空舊段落
+ */
+function renderPrayerLoading() {
+    const segmentsDiv = document.getElementById('prayer-segments');
+    if (!segmentsDiv) return;
+    if (document.getElementById('prayer-loading-block')) return; // 已存在就不重複插入
+    const html = `
+        <div id="prayer-loading-block" style="background:#fffbe6;border-radius:10px;padding:18px 16px 12px 16px;margin-bottom:18px;box-shadow:0 2px 8px #0001;">
+            <div style="font-weight:bold;color:#b8860b;margin-bottom:8px;">${t('loadingVerse')} <span id="prayer-loading-timer">(0)</span></div>
+        </div>
+    `;
+    segmentsDiv.insertAdjacentHTML('afterbegin', html);
+}
+
+/**
+ * 移除 loading 區塊
+ */
+function removePrayerLoading() {
+    const loadingBlock = document.getElementById('prayer-loading-block');
+    if (loadingBlock && loadingBlock.parentNode) {
+        loadingBlock.parentNode.removeChild(loadingBlock);
+    }
+}
 
 /**
  * 產生新禱告段落（prepend到最上方）
@@ -848,11 +873,13 @@ async function getEmotionalVerse(emotion, isFirst = false) {
             });
             // 清除倒數計時器
             clearInterval(countdownInterval);
-            // 移除 loading 區塊並渲染所有段落
+            // 移除 loading 區塊
+            removePrayerLoading();
+            // 渲染新段落
             renderPrayerSegments(verseMatch[1].trim(), comfortMatch[1].trim());
         } else {
             clearInterval(countdownInterval);
-            // 移除 loading 區塊並渲染所有段落
+            removePrayerLoading();
             renderPrayerSegments();
             const verseElement = document.getElementById('verse');
             verseElement.classList.remove('loading-verse');
@@ -861,7 +888,7 @@ async function getEmotionalVerse(emotion, isFirst = false) {
     } catch (error) {
         console.error('錯誤：', error);
         clearInterval(countdownInterval);
-        // 移除 loading 區塊並渲染所有段落
+        removePrayerLoading();
         renderPrayerSegments();
         const verseElement = document.getElementById('verse');
         verseElement.classList.remove('loading-verse');
