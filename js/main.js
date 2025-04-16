@@ -876,29 +876,46 @@ async function getEmotionalVerse(emotion, isFirst = false) {
  */
 function renderPrayerSegments(scripture, explanation) {
     const verseElement = document.getElementById('verse');
-    // 段落區塊
-    let html = '';
-    // 如果有主題經文與解說，顯示在最上方
-    if (typeof scripture === 'string' && typeof explanation === 'string') {
+    // 第一次產生主題經文區與禱告詞段落區
+    if (!document.getElementById('prayer-main')) {
+        let html = '';
+        // 主題經文區
         html += `
-            <div style="text-align: left; max-width: 600px; margin: 20px auto;">
+            <div id="prayer-main" style="text-align: left; max-width: 600px; margin: 20px auto;">
                 <h3 style="color: #2c3e50;">${t('verseForEmotion', { emotion: prayerEmotion })}</h3>
                 <p style="font-size: 1.1em;">
                     <strong>${t('scripture')}</strong><br>
-                    ${scripture.replace(/\n/g, '<br>')}
+                    ${typeof scripture === 'string' ? scripture.replace(/\n/g, '<br>') : ''}
                 </p>
                 <p style="color: #27ae60; margin-top: 20px;">
                     <strong>${t('explanation')}</strong><br>
-                    ${explanation.replace(/\n/g, '<br>')}
+                    ${typeof explanation === 'string' ? explanation.replace(/\n/g, '<br>') : ''}
                 </p>
             </div>
+            <div id="prayer-segments"></div>
         `;
+        verseElement.innerHTML = html;
     }
-    // 禱告段落（最新在上）
-    prayerSegments.forEach((seg, idx) => {
-        // 反向編號：最下方是#1，最上方是#N
-        const displayNumber = prayerSegments.length - idx;
-        html += `
+    // 若已存在主題經文區，僅更新主題經文內容（如語系切換）
+    else if (typeof scripture === 'string' && typeof explanation === 'string') {
+        const main = document.getElementById('prayer-main');
+        main.querySelector('h3').textContent = t('verseForEmotion', { emotion: prayerEmotion });
+        main.querySelector('strong').textContent = t('scripture');
+        main.querySelectorAll('p')[0].innerHTML = `<strong>${t('scripture')}</strong><br>${scripture.replace(/\n/g, '<br>')}`;
+        main.querySelectorAll('p')[1].innerHTML = `<strong>${t('explanation')}</strong><br>${explanation.replace(/\n/g, '<br>')}`;
+    }
+    // 若只是 append 新段落，不動主題經文區
+
+    // 若是第一次產生禱告詞段落，清空 segments
+    const segmentsDiv = document.getElementById('prayer-segments');
+    if (!segmentsDiv) return;
+
+    // 只渲染新段落（最新在上方）
+    if (prayerSegments.length > 0) {
+        const seg = prayerSegments[0];
+        const idx = 0;
+        const displayNumber = prayerSegments.length;
+        const segHtml = `
         <div style="background:#f8f9fa;border-radius:10px;padding:18px 16px 12px 16px;margin-bottom:18px;box-shadow:0 2px 8px #0001;">
             <div style="font-weight:bold;color:#2c3e50;margin-bottom:8px;">${t('prayerLabel')}#${displayNumber}</div>
             <div style="color:#2980b9;line-height:1.7;margin-bottom:12px;">${seg.text.replace(/\n/g, '<br>')}</div>
@@ -918,15 +935,16 @@ function renderPrayerSegments(scripture, explanation) {
                 </select>
                 <audio id="prayer-audio-${idx}" controls style="display:none;margin-top:10px;width:100%;"></audio>
             </div>
-            ${idx === 0 && prayerSegments.length < prayerMaxSegments ? `
+            ${prayerSegments.length < prayerMaxSegments ? `
                 <div style="margin-top:8px;">
                     <button onclick="getEmotionalVerse(prayerEmotion)">${t('continuePrayer')}</button>
                 </div>
             ` : ''}
         </div>
         `;
-    });
-    verseElement.innerHTML = html;
+        // prepend 新段落
+        segmentsDiv.insertAdjacentHTML('afterbegin', segHtml);
+    }
 }
 
 /**
