@@ -780,7 +780,6 @@ async function getEmotionalVerse(emotion, isFirst = false) {
         const verseElement = document.getElementById('verse');
         // loading區塊只顯示在最上方，舊禱告詞不消失
         renderPrayerLoading();
-        renderPrayerSegments();
 
         // 開始倒數計時
         countdownSeconds = 0;
