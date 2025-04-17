@@ -29,7 +29,7 @@ function detectUserLanguage() {
         return;
     }
     
-    const supportedLanguages = ['zh-Hant', 'zh-Hans', 'en', 'ja', 'ko'];
+    const supportedLanguages = ['zh-Hant', 'zh-Hans', 'en', 'ja', 'ko', 'de'];
     let browserLang = navigator.language || navigator.userLanguage || '';
     browserLang = browserLang.toLowerCase();
     
@@ -64,6 +64,9 @@ function detectUserLanguage() {
             break;
         case 'ko':
             localStorage.setItem('preferredLanguage', 'ko');
+            break;
+        case 'de':
+            localStorage.setItem('preferredLanguage', 'de');
             break;
         default:
             // 默認使用繁體中文
@@ -267,7 +270,8 @@ async function initEmotions() {
         'zh-Hans': '首次访问，请推荐5个常见的情绪状态',
         'en': 'First visit, please recommend 5 common emotional states',
         'ja': '初回訪問、一般的な感情状態を5つ推薦してください',
-        'ko': '첫 방문, 일반적인 감정 상태 5가지를 추천해 주세요'
+        'ko': '첫 방문, 일반적인 감정 상태 5가지를 추천해 주세요',
+        'de': 'Erster Besuch, bitte empfehlen Sie 5 häufige emotionale Zustände'
     };
 
     const prompt = promptByLang[currentLanguage] || promptByLang['zh-Hant'];
@@ -306,7 +310,8 @@ function createLanguageSelector() {
         { code: 'zh-Hans', name: '简体中文' },
         { code: 'en', name: 'English' },
         { code: 'ja', name: '日本語' },
-        { code: 'ko', name: '한국어' }
+        { code: 'ko', name: '한국어' },
+        { code: 'de', name: 'Deutsch' }
     ];
     
     languages.forEach(lang => {
@@ -346,7 +351,8 @@ async function generateEmotions(context, isFirst = false) {
             'zh-Hans': ['焦虑', '悲伤', '孤独', '压力', '喜乐', t('otherSituation')],
             'en': ['Anxiety', 'Sadness', 'Loneliness', 'Stress', 'Joy', t('otherSituation')],
             'ja': ['不安', '悲しみ', '孤独', 'ストレス', '喜び', t('otherSituation')],
-            'ko': ['불안', '슬픔', '외로움', '스트레스', '기쁨', t('otherSituation')]
+            'ko': ['불안', '슬픔', '외로움', '스트레스', '기쁨', t('otherSituation')],
+            'de': ['Angst', 'Traurigkeit', 'Einsamkeit', 'Stress', 'Freude', t('otherSituation')]
         };
         let result = fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
 
@@ -363,7 +369,9 @@ async function generateEmotions(context, isFirst = false) {
                         ? '食事前の祈り'
                         : currentLanguage === 'ko'
                             ? '식사 전 기도'
-                            : '用餐前的禱告';
+                            : currentLanguage === 'de'
+                                ? 'Gebet vor dem Essen'
+                                : '用餐前的禱告';
             }
             const groupPrayer = currentLanguage === 'en'
                 ? 'Prayer for small group fellowship'
@@ -371,7 +379,9 @@ async function generateEmotions(context, isFirst = false) {
                     ? '小グループ交わりの祈り'
                     : currentLanguage === 'ko'
                         ? '소그룹 모임을 위한 기도'
-                        : '與人小組聚會的禱告';
+                        : currentLanguage === 'de'
+                            ? 'Gebet für Kleingruppentreffen'
+                            : '與人小組聚會的禱告';
 
             if (mealPrayer && !result.includes(mealPrayer)) result.push(mealPrayer);
             if (!result.includes(groupPrayer)) result.push(groupPrayer);
@@ -434,7 +444,9 @@ async function generateEmotions(context, isFirst = false) {
                         ? '食事前の祈り'
                         : currentLanguage === 'ko'
                             ? '식사 전 기도'
-                            : '用餐前的禱告';
+                            : currentLanguage === 'de'
+                                ? 'Gebet vor dem Essen'
+                                : '用餐前的禱告';
             }
             const groupPrayer = currentLanguage === 'en'
                 ? 'Prayer for small group fellowship'
@@ -442,7 +454,9 @@ async function generateEmotions(context, isFirst = false) {
                     ? '小グループ交わりの祈り'
                     : currentLanguage === 'ko'
                         ? '소그룹 모임을 위한 기도'
-                        : '與人小組聚會的禱告';
+                        : currentLanguage === 'de'
+                            ? 'Gebet für Kleingruppentreffen'
+                            : '與人小組聚會的禱告';
 
             if (mealPrayer && !result.includes(mealPrayer)) result.push(mealPrayer);
             if (!result.includes(groupPrayer)) result.push(groupPrayer);
@@ -457,7 +471,8 @@ async function generateEmotions(context, isFirst = false) {
             'zh-Hans': ['焦虑', '悲伤', '孤独', '压力', '喜乐', t('otherSituation')],
             'en': ['Anxiety', 'Sadness', 'Loneliness', 'Stress', 'Joy', t('otherSituation')],
             'ja': ['不安', '悲しみ', '孤独', 'ストレス', '喜び', t('otherSituation')],
-            'ko': ['불안', '슬픔', '외로움', '스트레스', '기쁨', t('otherSituation')]
+            'ko': ['불안', '슬픔', '외로움', '스트레스', '기쁨', t('otherSituation')],
+            'de': ['Angst', 'Traurigkeit', 'Einsamkeit', 'Stress', 'Freude', t('otherSituation')]
         };
         let result = fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
 
@@ -506,7 +521,8 @@ function createEmotionButtons(emotions) {
                emotion === '我有其他状况' || 
                emotion === 'I have another situation' ||
                emotion === '他の状況があります' ||
-               emotion === '다른 상황이 있어요') {
+               emotion === '다른 상황이 있어요' ||
+               emotion === 'Ich habe eine andere Situation') {
                 loadMoreEmotions();
             } else {
                 getEmotionalVerse(emotion, true);
@@ -517,7 +533,8 @@ function createEmotionButtons(emotions) {
            emotion === '我有其他状况' || 
            emotion === 'I have another situation' ||
            emotion === '他の状況があります' ||
-           emotion === '다른 상황이 있어요') {
+           emotion === '다른 상황이 있어요' ||
+           emotion === 'Ich habe eine andere Situation') {
             btn.style.backgroundColor = '#2196F3';
         }
         container.appendChild(btn);

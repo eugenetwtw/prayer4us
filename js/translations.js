@@ -159,6 +159,38 @@ const translations = {
         languageSelector: 'Language',
         continuePrayer: '더 긴 기도를 이어가기',
         prayerLabel: '기도'
+    },
+    // German
+    'de': {
+        title: 'Lass mich mit dir beten',
+        backButton: '↩ Vorherige Emotionen',
+        loadingEmotions: '⏳ Suche nach weiteren Emotionen...',
+        customEmotionLabel: 'Bitte beschreibe deine aktuelle Situation:',
+        submitButton: 'Absenden',
+        resetButton: 'Emotionsauswahl zurücksetzen',
+        otherSituation: 'Ich habe eine andere Situation',
+        loadingVerse: '⏳ Suche nach passender Bibelstelle...',
+        verseForEmotion: '📖 Für diejenigen, die "{emotion}" erleben:',
+        scripture: 'Bibelstelle:',
+        explanation: 'Erklärung:',
+        prayer: 'Gebet:',
+        playPrayer: '▶ Gebet abspielen',
+        generatingAudio: '⏳ Audio wird generiert...',
+        voiceSelector: 'Stimme auswählen',
+        alloy: 'Alloy (Ausgeglichen)',
+        echo: 'Echo (Tief)',
+        fable: 'Fable (Warm)',
+        onyx: 'Onyx (Stark)',
+        nova: 'Nova (Freundlich)',
+        shimmer: 'Shimmer (Hell)',
+        apiKeyNotSet: '❌ API-Schlüssel nicht gesetzt, Bibelstelle kann nicht abgerufen werden',
+        errorGettingVerse: '❌ Fehler beim Abrufen der Bibelstelle, bitte versuche es später erneut',
+        audioPlayError: 'Audio kann nicht abgespielt werden, bitte versuche es später erneut',
+        parseError: '⚠️ Antwort konnte nicht analysiert werden, hier ist der ursprüngliche Inhalt:',
+        apiKeyNotSetAudio: 'API-Schlüssel nicht gesetzt, Audio kann nicht abgespielt werden',
+        languageSelector: 'Sprache',
+        continuePrayer: 'Mit einem längeren Gebet fortfahren',
+        prayerLabel: 'Gebet'
     }
 };
 
