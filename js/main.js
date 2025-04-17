@@ -994,8 +994,8 @@ async function playPrayerSegment(idx) {
 
         // 準備API請求體
         const requestBody = {
-        //    model: "tts-1",
-            model: "gpt-4o-mini-tts",
+            model: "tts-1",
+        //    model: "gpt-4o-mini-tts",
             voice: selectedVoice,
             input: seg.text,
             response_format: "mp3"
