@@ -473,27 +473,9 @@ async function generateEmotions(context, isFirst = false) {
 
         // 新增功能：用餐前的禱告、與人小組聚會的禱告
         if (isFirst) {
-            // 判斷是否用餐時間
-            const now = new Date();
-            const hour = now.getHours();
-            let mealPrayer = null;
-            if ((hour >= 5 && hour < 9) || (hour >= 11 && hour < 14) || (hour >= 17 && hour < 20)) {
-                mealPrayer = currentLanguage === 'en'
-                    ? 'Prayer before meal'
-                    : currentLanguage === 'ja'
-                        ? '食事前の祈り'
-                        : currentLanguage === 'ko'
-                            ? '식사 전 기도'
-                            : '用餐前的禱告';
-            }
-            const groupPrayer = currentLanguage === 'en'
-                ? 'Prayer for small group fellowship'
-                : currentLanguage === 'ja'
-                    ? '小グループ交わりの祈り'
-                    : currentLanguage === 'ko'
-                        ? '소그룹 모임을 위한 기도'
-                        : '與人小組聚會的禱告';
-
+            const lang = getCurrentLanguage();
+            const mealPrayer = translations[lang]['mealPrayer'] || translations['zh-Hant']['mealPrayer'];
+            const groupPrayer = translations[lang]['groupPrayer'] || translations['zh-Hant']['groupPrayer'];
             if (mealPrayer && !result.includes(mealPrayer)) result.push(mealPrayer);
             if (!result.includes(groupPrayer)) result.push(groupPrayer);
         }
