@@ -366,34 +366,40 @@ async function generateEmotions(context, isFirst = false) {
         console.warn('API金鑰未設置，使用備用情緒列表');
         
         // 根據語言返回不同的備用情緒列表
-        const fallbackEmotions = {
-            'zh-Hant': ['焦慮', '悲傷', '孤獨', '壓力', '喜樂', t('otherSituation')],
-            'zh-Hans': ['焦虑', '悲伤', '孤独', '压力', '喜乐', t('otherSituation')],
-            'en': ['Anxiety', 'Sadness', 'Loneliness', 'Stress', 'Joy', t('otherSituation')],
-            'ja': ['不安', '悲しみ', '孤独', 'ストレス', '喜び', t('otherSituation')],
-            'ko': ['불안', '슬픔', '외로움', '스트레스', '기쁨', t('otherSituation')],
-            'de': ['Angst', 'Traurigkeit', 'Einsamkeit', 'Stress', 'Freude', t('otherSituation')],
-            'fr': ['Anxiété', 'Tristesse', 'Solitude', 'Stress', 'Joie', t('otherSituation')],
-            'it': ['Ansia', 'Tristezza', 'Solitudine', 'Stress', 'Gioia', t('otherSituation')],
-            'es': ['Ansiedad', 'Tristeza', 'Soledad', 'Estrés', 'Alegría', t('otherSituation')],
-            'nl': ['Angst', 'Verdriet', 'Eenzaamheid', 'Stress', 'Vreugde', t('otherSituation')]
-        };
-        let result = fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
+        // fallbackEmotions 改為動態產生，確保 mealPrayer/groupPrayer 會隨語言切換
+        function getFallbackEmotions() {
+            const base = {
+                'zh-Hant': ['焦慮', '悲傷', '孤獨', '壓力', '喜樂'],
+                'zh-Hans': ['焦虑', '悲伤', '孤独', '压力', '喜乐'],
+                'en': ['Anxiety', 'Sadness', 'Loneliness', 'Stress', 'Joy'],
+                'ja': ['不安', '悲しみ', '孤独', 'ストレス', '喜び'],
+                'ko': ['불안', '슬픔', '외로움', '스트레스', '기쁨'],
+                'de': ['Angst', 'Traurigkeit', 'Einsamkeit', 'Stress', 'Freude'],
+                'fr': ['Anxiété', 'Tristesse', 'Solitude', 'Stress', 'Joie'],
+                'it': ['Ansia', 'Tristezza', 'Solitudine', 'Stress', 'Gioia'],
+                'es': ['Ansiedad', 'Tristeza', 'Soledad', 'Estrés', 'Alegría'],
+                'nl': ['Angst', 'Verdriet', 'Eenzaamheid', 'Stress', 'Vreugde']
+            };
+            const arr = base[currentLanguage] || base['zh-Hant'];
+            let result = [...arr, t('otherSituation')];
 
-        // 新增功能：用餐前的禱告、與人小組聚會的禱告
-        if (isFirst) {
-            // 判斷是否用餐時間
-            const now = new Date();
-            const hour = now.getHours();
-            let mealPrayer = null;
-            if ((hour >= 5 && hour < 9) || (hour >= 11 && hour < 14) || (hour >= 17 && hour < 20)) {
-                mealPrayer = t('mealPrayer');
+            // 新增功能：用餐前的禱告、與人小組聚會的禱告
+            if (isFirst) {
+                // 判斷是否用餐時間
+                const now = new Date();
+                const hour = now.getHours();
+                let mealPrayer = null;
+                if ((hour >= 5 && hour < 9) || (hour >= 11 && hour < 14) || (hour >= 17 && hour < 20)) {
+                    mealPrayer = t('mealPrayer');
+                }
+                const groupPrayer = t('groupPrayer');
+
+                if (mealPrayer && !result.includes(mealPrayer)) result.push(mealPrayer);
+                if (!result.includes(groupPrayer)) result.push(groupPrayer);
             }
-            const groupPrayer = t('groupPrayer');
-
-            if (mealPrayer && !result.includes(mealPrayer)) result.push(mealPrayer);
-            if (!result.includes(groupPrayer)) result.push(groupPrayer);
+            return result;
         }
+        let result = getFallbackEmotions();
 
         return result;
     }
