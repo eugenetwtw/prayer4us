@@ -401,11 +401,12 @@ async function generateEmotions(context, isFirst = false) {
                 model: 'gpt-4.1-nano',
                 messages: [{
                     role: 'user',
-                    content: `參考以下情境提供5個${currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : '中文'}最近一般人常會有的情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
+                    content: `參考以下情境提供5個${currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : currentLanguage === 'de' ? '德文' : '中文'}最近一般人常會有的情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
                     情境：${context}
                     範例輸出：${currentLanguage === 'en' ? 'Anxiety Sadness Loneliness Stress Joy ' + t('otherSituation') : 
                               currentLanguage === 'ja' ? '不安 悲しみ 孤独 ストレス 喜び ' + t('otherSituation') : 
-                              currentLanguage === 'ko' ? '불안 슬픔 외로움 스트레스 기쁨 ' + t('otherSituation') : 
+                              currentLanguage === 'ko' ? '불안 슬픔 외로움 스트레스 기쁨 ' + t('otherSituation') :
+                              currentLanguage === 'de' ? 'Angst Traurigkeit Einsamkeit Stress Freude ' + t('otherSituation') : 
                               '焦慮 悲傷 孤獨 壓力 喜樂 ' + t('otherSituation')}`
                 }],
                 max_tokens: 100,
@@ -489,7 +490,9 @@ async function generateEmotions(context, isFirst = false) {
                         ? '食事前の祈り'
                         : currentLanguage === 'ko'
                             ? '식사 전 기도'
-                            : '用餐前的禱告';
+                            : currentLanguage === 'de'
+                                ? 'Gebet vor dem Essen'
+                                : '用餐前的禱告';
             }
             const groupPrayer = currentLanguage === 'en'
                 ? 'Prayer for small group fellowship'
@@ -497,7 +500,9 @@ async function generateEmotions(context, isFirst = false) {
                     ? '小グループ交わりの祈り'
                     : currentLanguage === 'ko'
                         ? '소그룹 모임을 위한 기도'
-                        : '與人小組聚會的禱告';
+                        : currentLanguage === 'de'
+                            ? 'Gebet für Kleingruppentreffen'
+                            : '與人小組聚會的禱告';
 
             if (mealPrayer && !result.includes(mealPrayer)) result.push(mealPrayer);
             if (!result.includes(groupPrayer)) result.push(groupPrayer);
@@ -821,9 +826,9 @@ async function getEmotionalVerse(emotion, isFirst = false) {
                 messages: [{
                     role: 'user',
                     content: `請針對「${emotion}」情緒：
-1. 提供合適聖經經文(格式：『經文』書名 章:節)${currentLanguage === 'en' || currentLanguage === 'ja' || currentLanguage === 'ko' ? '只需' + (currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : '韓文') : '同時提出中英文'}
-2. 簡明的解說，50字內，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
-3. 禱告詞，${prayerLength}字以上，你是一個資深慈愛的牧師，同情用戶的狀態，深情地為用戶禱告，為用戶設身處地思考，祈求上帝給用戶安慰和力量，用華麗的辭藻，用詩歌般的語言，用最真摯的情感，寫出最感人的禱告詞，激發用戶的感受，讓靈性灌注與降臨，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : '用繁體中文'}
+1. 提供合適聖經經文(格式：『經文』書名 章:節)${currentLanguage === 'en' || currentLanguage === 'ja' || currentLanguage === 'ko' || currentLanguage === 'de' ? '只需' + (currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : currentLanguage === 'de' ? '德文' : '') : '同時提出中英文'}
+2. 簡明的解說，50字內，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : currentLanguage === 'de' ? '用德文' : '用繁體中文'}
+3. 禱告詞，${prayerLength}字以上，你是一個資深慈愛的牧師，同情用戶的狀態，深情地為用戶禱告，為用戶設身處地思考，祈求上帝給用戶安慰和力量，用華麗的辭藻，用詩歌般的語言，用最真摯的情感，寫出最感人的禱告詞，激發用戶的感受，讓靈性灌注與降臨，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : currentLanguage === 'de' ? '用德文' : '用繁體中文'}
 請用以下格式回應：
 【${t('scripture').replace('：', '')}】{內容}
 【${t('explanation').replace('：', '')}】{解說}
