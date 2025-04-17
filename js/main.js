@@ -29,7 +29,7 @@ function detectUserLanguage() {
         return;
     }
     
-    const supportedLanguages = ['zh-Hant', 'zh-Hans', 'en', 'ja', 'ko', 'de', 'fr', 'it', 'es', 'nl'];
+    const supportedLanguages = ['zh-Hant', 'zh-Hans', 'en', 'ja', 'ko'];
     let browserLang = navigator.language || navigator.userLanguage || '';
     browserLang = browserLang.toLowerCase();
     
@@ -64,21 +64,6 @@ function detectUserLanguage() {
             break;
         case 'ko':
             localStorage.setItem('preferredLanguage', 'ko');
-            break;
-        case 'de':
-            localStorage.setItem('preferredLanguage', 'de');
-            break;
-        case 'fr':
-            localStorage.setItem('preferredLanguage', 'fr');
-            break;
-        case 'it':
-            localStorage.setItem('preferredLanguage', 'it');
-            break;
-        case 'es':
-            localStorage.setItem('preferredLanguage', 'es');
-            break;
-        case 'nl':
-            localStorage.setItem('preferredLanguage', 'nl');
             break;
         default:
             // 默認使用繁體中文
@@ -282,12 +267,7 @@ async function initEmotions() {
         'zh-Hans': '首次访问，请推荐5个常见的情绪状态',
         'en': 'First visit, please recommend 5 common emotional states',
         'ja': '初回訪問、一般的な感情状態を5つ推薦してください',
-        'ko': '첫 방문, 일반적인 감정 상태 5가지를 추천해 주세요',
-        'de': 'Erster Besuch, bitte empfehlen Sie 5 häufige emotionale Zustände',
-        'fr': 'Première visite, veuillez recommander 5 états émotionnels courants',
-        'it': 'Prima visita, si prega di raccomandare 5 stati emotivi comuni',
-        'es': 'Primera visita, por favor recomiende 5 estados emocionales comunes',
-        'nl': 'Eerste bezoek, graag 5 veelvoorkomende emotionele toestanden aanbevelen'
+        'ko': '첫 방문, 일반적인 감정 상태 5가지를 추천해 주세요'
     };
 
     const prompt = promptByLang[currentLanguage] || promptByLang['zh-Hant'];
@@ -326,12 +306,7 @@ function createLanguageSelector() {
         { code: 'zh-Hans', name: '简体中文' },
         { code: 'en', name: 'English' },
         { code: 'ja', name: '日本語' },
-        { code: 'ko', name: '한국어' },
-        { code: 'de', name: 'Deutsch' },
-        { code: 'fr', name: 'Français' },
-        { code: 'it', name: 'Italiano' },
-        { code: 'es', name: 'Español' },
-        { code: 'nl', name: 'Nederlands' }
+        { code: 'ko', name: '한국어' }
     ];
     
     languages.forEach(lang => {
@@ -366,41 +341,41 @@ async function generateEmotions(context, isFirst = false) {
         console.warn('API金鑰未設置，使用備用情緒列表');
         
         // 根據語言返回不同的備用情緒列表
-        // fallbackEmotions 改為動態產生，確保 mealPrayer/groupPrayer 會隨語言切換
-        function getFallbackEmotions() {
-            const lang = getCurrentLanguage();
-            const base = {
-                'zh-Hant': ['焦慮', '悲傷', '孤獨', '壓力', '喜樂'],
-                'zh-Hans': ['焦虑', '悲伤', '孤独', '压力', '喜乐'],
-                'en': ['Anxiety', 'Sadness', 'Loneliness', 'Stress', 'Joy'],
-                'ja': ['不安', '悲しみ', '孤独', 'ストレス', '喜び'],
-                'ko': ['불안', '슬픔', '외로움', '스트레스', '기쁨'],
-                'de': ['Angst', 'Traurigkeit', 'Einsamkeit', 'Stress', 'Freude'],
-                'fr': ['Anxiété', 'Tristesse', 'Solitude', 'Stress', 'Joie'],
-                'it': ['Ansia', 'Tristezza', 'Solitudine', 'Stress', 'Gioia'],
-                'es': ['Ansiedad', 'Tristeza', 'Soledad', 'Estrés', 'Alegría'],
-                'nl': ['Angst', 'Verdriet', 'Eenzaamheid', 'Stress', 'Vreugde']
-            };
-            const arr = base[lang] || base['zh-Hant'];
-            let result = [...arr, translations[lang]['otherSituation'] || translations['zh-Hant']['otherSituation']];
+        const fallbackEmotions = {
+            'zh-Hant': ['焦慮', '悲傷', '孤獨', '壓力', '喜樂', t('otherSituation')],
+            'zh-Hans': ['焦虑', '悲伤', '孤独', '压力', '喜乐', t('otherSituation')],
+            'en': ['Anxiety', 'Sadness', 'Loneliness', 'Stress', 'Joy', t('otherSituation')],
+            'ja': ['不安', '悲しみ', '孤独', 'ストレス', '喜び', t('otherSituation')],
+            'ko': ['불안', '슬픔', '외로움', '스트레스', '기쁨', t('otherSituation')]
+        };
+        let result = fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
 
-            // 新增功能：用餐前的禱告、與人小組聚會的禱告
-            if (isFirst) {
-                // 判斷是否用餐時間
-                const now = new Date();
-                const hour = now.getHours();
-                let mealPrayer = null;
-                if ((hour >= 5 && hour < 9) || (hour >= 11 && hour < 14) || (hour >= 17 && hour < 20)) {
-                    mealPrayer = translations[lang]['mealPrayer'] || translations['zh-Hant']['mealPrayer'];
-                }
-                const groupPrayer = translations[lang]['groupPrayer'] || translations['zh-Hant']['groupPrayer'];
-
-                if (mealPrayer && !result.includes(mealPrayer)) result.push(mealPrayer);
-                if (!result.includes(groupPrayer)) result.push(groupPrayer);
+        // 新增功能：用餐前的禱告、與人小組聚會的禱告
+        if (isFirst) {
+            // 判斷是否用餐時間
+            const now = new Date();
+            const hour = now.getHours();
+            let mealPrayer = null;
+            if ((hour >= 5 && hour < 9) || (hour >= 11 && hour < 14) || (hour >= 17 && hour < 20)) {
+                mealPrayer = currentLanguage === 'en'
+                    ? 'Prayer before meal'
+                    : currentLanguage === 'ja'
+                        ? '食事前の祈り'
+                        : currentLanguage === 'ko'
+                            ? '식사 전 기도'
+                            : '用餐前的禱告';
             }
-            return result;
+            const groupPrayer = currentLanguage === 'en'
+                ? 'Prayer for small group fellowship'
+                : currentLanguage === 'ja'
+                    ? '小グループ交わりの祈り'
+                    : currentLanguage === 'ko'
+                        ? '소그룹 모임을 위한 기도'
+                        : '與人小組聚會的禱告';
+
+            if (mealPrayer && !result.includes(mealPrayer)) result.push(mealPrayer);
+            if (!result.includes(groupPrayer)) result.push(groupPrayer);
         }
-        let result = getFallbackEmotions();
 
         return result;
     }
@@ -416,37 +391,12 @@ async function generateEmotions(context, isFirst = false) {
                 model: 'gpt-4.1-nano',
                 messages: [{
                     role: 'user',
-                    content: (() => {
-                        const emotionsLangLabel = {
-                            'zh-Hant': '中文',
-                            'zh-Hans': '中文',
-                            'en': '英文',
-                            'ja': '日文',
-                            'ko': '韓文',
-                            'de': '德文',
-                            'fr': '法文',
-                            'it': '義大利文',
-                            'es': '西班牙文',
-                            'nl': '荷蘭文'
-                        };
-                        const fallbackEmotions = {
-                            'zh-Hant': '焦慮 悲傷 孤獨 壓力 喜樂 ' + t('otherSituation'),
-                            'zh-Hans': '焦虑 悲伤 孤独 压力 喜乐 ' + t('otherSituation'),
-                            'en': 'Anxiety Sadness Loneliness Stress Joy ' + t('otherSituation'),
-                            'ja': '不安 悲しみ 孤独 ストレス 喜び ' + t('otherSituation'),
-                            'ko': '불안 슬픔 외로움 스트레스 기쁨 ' + t('otherSituation'),
-                            'de': 'Angst Traurigkeit Einsamkeit Stress Freude ' + t('otherSituation'),
-                            'fr': 'Anxiété Tristesse Solitude Stress Joie ' + t('otherSituation'),
-                            'it': 'Ansia Tristezza Solitudine Stress Gioia ' + t('otherSituation'),
-                            'es': 'Ansiedad Tristeza Soledad Estrés Alegría ' + t('otherSituation'),
-                            'nl': 'Angst Verdriet Eenzaamheid Stress Vreugde ' + t('otherSituation')
-                        };
-                        const langLabel = emotionsLangLabel[currentLanguage] || '中文';
-                        const example = fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
-                        return `參考以下情境提供5個${langLabel}最近一般人常會有的情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
+                    content: `參考以下情境提供5個${currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : '中文'}最近一般人常會有的情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
                     情境：${context}
-                    範例輸出：${example}`;
-                    })()
+                    範例輸出：${currentLanguage === 'en' ? 'Anxiety Sadness Loneliness Stress Joy ' + t('otherSituation') : 
+                              currentLanguage === 'ja' ? '不安 悲しみ 孤独 ストレス 喜び ' + t('otherSituation') : 
+                              currentLanguage === 'ko' ? '불안 슬픔 외로움 스트레스 기쁨 ' + t('otherSituation') : 
+                              '焦慮 悲傷 孤獨 壓力 喜樂 ' + t('otherSituation')}`
                 }],
                 max_tokens: 100,
                 temperature: 0.7
@@ -473,9 +423,27 @@ async function generateEmotions(context, isFirst = false) {
 
         // 新增功能：用餐前的禱告、與人小組聚會的禱告
         if (isFirst) {
-            const lang = getCurrentLanguage();
-            const mealPrayer = translations[lang]['mealPrayer'] || translations['zh-Hant']['mealPrayer'];
-            const groupPrayer = translations[lang]['groupPrayer'] || translations['zh-Hant']['groupPrayer'];
+            // 判斷是否用餐時間
+            const now = new Date();
+            const hour = now.getHours();
+            let mealPrayer = null;
+            if ((hour >= 5 && hour < 9) || (hour >= 11 && hour < 14) || (hour >= 17 && hour < 20)) {
+                mealPrayer = currentLanguage === 'en'
+                    ? 'Prayer before meal'
+                    : currentLanguage === 'ja'
+                        ? '食事前の祈り'
+                        : currentLanguage === 'ko'
+                            ? '식사 전 기도'
+                            : '用餐前的禱告';
+            }
+            const groupPrayer = currentLanguage === 'en'
+                ? 'Prayer for small group fellowship'
+                : currentLanguage === 'ja'
+                    ? '小グループ交わりの祈り'
+                    : currentLanguage === 'ko'
+                        ? '소그룹 모임을 위한 기도'
+                        : '與人小組聚會的禱告';
+
             if (mealPrayer && !result.includes(mealPrayer)) result.push(mealPrayer);
             if (!result.includes(groupPrayer)) result.push(groupPrayer);
         }
@@ -495,9 +463,27 @@ async function generateEmotions(context, isFirst = false) {
 
         // 新增功能：用餐前的禱告、與人小組聚會的禱告
         if (isFirst) {
-            const lang = getCurrentLanguage();
-            const mealPrayer = translations[lang]['mealPrayer'] || translations['zh-Hant']['mealPrayer'];
-            const groupPrayer = translations[lang]['groupPrayer'] || translations['zh-Hant']['groupPrayer'];
+            // 判斷是否用餐時間
+            const now = new Date();
+            const hour = now.getHours();
+            let mealPrayer = null;
+            if ((hour >= 5 && hour < 9) || (hour >= 11 && hour < 14) || (hour >= 17 && hour < 20)) {
+                mealPrayer = currentLanguage === 'en'
+                    ? 'Prayer before meal'
+                    : currentLanguage === 'ja'
+                        ? '食事前の祈り'
+                        : currentLanguage === 'ko'
+                            ? '식사 전 기도'
+                            : '用餐前的禱告';
+            }
+            const groupPrayer = currentLanguage === 'en'
+                ? 'Prayer for small group fellowship'
+                : currentLanguage === 'ja'
+                    ? '小グループ交わりの祈り'
+                    : currentLanguage === 'ko'
+                        ? '소그룹 모임을 위한 기도'
+                        : '與人小組聚會的禱告';
+
             if (mealPrayer && !result.includes(mealPrayer)) result.push(mealPrayer);
             if (!result.includes(groupPrayer)) result.push(groupPrayer);
         }
