@@ -368,6 +368,7 @@ async function generateEmotions(context, isFirst = false) {
         // 根據語言返回不同的備用情緒列表
         // fallbackEmotions 改為動態產生，確保 mealPrayer/groupPrayer 會隨語言切換
         function getFallbackEmotions() {
+            const lang = getCurrentLanguage();
             const base = {
                 'zh-Hant': ['焦慮', '悲傷', '孤獨', '壓力', '喜樂'],
                 'zh-Hans': ['焦虑', '悲伤', '孤独', '压力', '喜乐'],
@@ -380,8 +381,8 @@ async function generateEmotions(context, isFirst = false) {
                 'es': ['Ansiedad', 'Tristeza', 'Soledad', 'Estrés', 'Alegría'],
                 'nl': ['Angst', 'Verdriet', 'Eenzaamheid', 'Stress', 'Vreugde']
             };
-            const arr = base[currentLanguage] || base['zh-Hant'];
-            let result = [...arr, t('otherSituation')];
+            const arr = base[lang] || base['zh-Hant'];
+            let result = [...arr, translations[lang]['otherSituation'] || translations['zh-Hant']['otherSituation']];
 
             // 新增功能：用餐前的禱告、與人小組聚會的禱告
             if (isFirst) {
@@ -390,9 +391,9 @@ async function generateEmotions(context, isFirst = false) {
                 const hour = now.getHours();
                 let mealPrayer = null;
                 if ((hour >= 5 && hour < 9) || (hour >= 11 && hour < 14) || (hour >= 17 && hour < 20)) {
-                    mealPrayer = t('mealPrayer');
+                    mealPrayer = translations[lang]['mealPrayer'] || translations['zh-Hant']['mealPrayer'];
                 }
-                const groupPrayer = t('groupPrayer');
+                const groupPrayer = translations[lang]['groupPrayer'] || translations['zh-Hant']['groupPrayer'];
 
                 if (mealPrayer && !result.includes(mealPrayer)) result.push(mealPrayer);
                 if (!result.includes(groupPrayer)) result.push(groupPrayer);
