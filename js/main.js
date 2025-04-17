@@ -409,12 +409,37 @@ async function generateEmotions(context, isFirst = false) {
                 model: 'gpt-4.1-nano',
                 messages: [{
                     role: 'user',
-                    content: `參考以下情境提供5個${currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : '中文'}最近一般人常會有的情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
+                    content: (() => {
+                        const emotionsLangLabel = {
+                            'zh-Hant': '中文',
+                            'zh-Hans': '中文',
+                            'en': '英文',
+                            'ja': '日文',
+                            'ko': '韓文',
+                            'de': '德文',
+                            'fr': '法文',
+                            'it': '義大利文',
+                            'es': '西班牙文',
+                            'nl': '荷蘭文'
+                        };
+                        const fallbackEmotions = {
+                            'zh-Hant': '焦慮 悲傷 孤獨 壓力 喜樂 ' + t('otherSituation'),
+                            'zh-Hans': '焦虑 悲伤 孤独 压力 喜乐 ' + t('otherSituation'),
+                            'en': 'Anxiety Sadness Loneliness Stress Joy ' + t('otherSituation'),
+                            'ja': '不安 悲しみ 孤独 ストレス 喜び ' + t('otherSituation'),
+                            'ko': '불안 슬픔 외로움 스트레스 기쁨 ' + t('otherSituation'),
+                            'de': 'Angst Traurigkeit Einsamkeit Stress Freude ' + t('otherSituation'),
+                            'fr': 'Anxiété Tristesse Solitude Stress Joie ' + t('otherSituation'),
+                            'it': 'Ansia Tristezza Solitudine Stress Gioia ' + t('otherSituation'),
+                            'es': 'Ansiedad Tristeza Soledad Estrés Alegría ' + t('otherSituation'),
+                            'nl': 'Angst Verdriet Eenzaamheid Stress Vreugde ' + t('otherSituation')
+                        };
+                        const langLabel = emotionsLangLabel[currentLanguage] || '中文';
+                        const example = fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
+                        return `參考以下情境提供5個${langLabel}最近一般人常會有的情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
                     情境：${context}
-                    範例輸出：${currentLanguage === 'en' ? 'Anxiety Sadness Loneliness Stress Joy ' + t('otherSituation') : 
-                              currentLanguage === 'ja' ? '不安 悲しみ 孤独 ストレス 喜び ' + t('otherSituation') : 
-                              currentLanguage === 'ko' ? '불안 슬픔 외로움 스트레스 기쁨 ' + t('otherSituation') : 
-                              '焦慮 悲傷 孤獨 壓力 喜樂 ' + t('otherSituation')}`
+                    範例輸出：${example}`;
+                    })()
                 }],
                 max_tokens: 100,
                 temperature: 0.7
