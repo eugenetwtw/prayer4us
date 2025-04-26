@@ -191,6 +191,38 @@ const translations = {
         languageSelector: 'Sprache',
         continuePrayer: 'Mit einem längeren Gebet fortfahren',
         prayerLabel: 'Gebet'
+    },
+    // French
+    'fr': {
+        title: 'Prions ensemble',
+        backButton: '↩ Émotions précédentes',
+        loadingEmotions: '⏳ Recherche d\'émotions supplémentaires...',
+        customEmotionLabel: 'Veuillez décrire votre situation actuelle:',
+        submitButton: 'Soumettre',
+        resetButton: 'Réinitialiser la sélection d\'émotions',
+        otherSituation: 'J\'ai une autre situation',
+        loadingVerse: '⏳ Recherche d\'un verset approprié...',
+        verseForEmotion: '📖 Pour ceux qui ressentent "{emotion}":',
+        scripture: 'Écriture:',
+        explanation: 'Explication:',
+        prayer: 'Prière:',
+        playPrayer: '▶ Écouter la prière',
+        generatingAudio: '⏳ Génération de l\'audio...',
+        voiceSelector: 'Sélectionner une voix',
+        alloy: 'Alloy (Équilibrée)',
+        echo: 'Echo (Profonde)',
+        fable: 'Fable (Chaleureuse)',
+        onyx: 'Onyx (Forte)',
+        nova: 'Nova (Amicale)',
+        shimmer: 'Shimmer (Claire)',
+        apiKeyNotSet: '❌ Clé API non définie, impossible de récupérer les écritures',
+        errorGettingVerse: '❌ Erreur lors de la récupération des écritures, veuillez réessayer plus tard',
+        audioPlayError: 'Impossible de lire l\'audio, veuillez réessayer plus tard',
+        parseError: '⚠️ Impossible d\'analyser la réponse, voici le contenu original:',
+        apiKeyNotSetAudio: 'Clé API non définie, impossible de lire l\'audio',
+        languageSelector: 'Langue',
+        continuePrayer: 'Continuer avec une prière plus longue',
+        prayerLabel: 'Prière'
     }
 };
 
