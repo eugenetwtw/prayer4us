@@ -287,6 +287,38 @@ const translations = {
         languageSelector: 'Taal',
         continuePrayer: 'Doorgaan met een langer gebed',
         prayerLabel: 'Gebed'
+    },
+    // Spanish
+    'es': {
+        title: 'Oremos juntos',
+        backButton: '↩ Emociones anteriores',
+        loadingEmotions: '⏳ Buscando más emociones...',
+        customEmotionLabel: 'Por favor describe tu situación actual:',
+        submitButton: 'Enviar',
+        resetButton: 'Reiniciar selección de emoción',
+        otherSituation: 'Tengo otra situación',
+        loadingVerse: '⏳ Buscando escritura apropiada...',
+        verseForEmotion: '📖 Para aquellos que experimentan "{emotion}":',
+        scripture: 'Escritura:',
+        explanation: 'Explicación:',
+        prayer: 'Oración:',
+        playPrayer: '▶ Reproducir oración',
+        generatingAudio: '⏳ Generando audio...',
+        voiceSelector: 'Seleccionar voz',
+        alloy: 'Alloy (Equilibrada)',
+        echo: 'Echo (Profunda)',
+        fable: 'Fable (Cálida)',
+        onyx: 'Onyx (Fuerte)',
+        nova: 'Nova (Amigable)',
+        shimmer: 'Shimmer (Brillante)',
+        apiKeyNotSet: '❌ Clave API no configurada, no se puede recuperar la escritura',
+        errorGettingVerse: '❌ Error al obtener la escritura, por favor intenta más tarde',
+        audioPlayError: 'No se puede reproducir el audio, por favor intenta más tarde',
+        parseError: '⚠️ No se pudo analizar la respuesta, aquí está el contenido original:',
+        apiKeyNotSetAudio: 'Clave API no configurada, no se puede reproducir el audio',
+        languageSelector: 'Idioma',
+        continuePrayer: 'Continuar con una oración más larga',
+        prayerLabel: 'Oración'
     }
 };
 

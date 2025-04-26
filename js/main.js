@@ -1,4 +1,4 @@
-/**
+7/**
  * 語系網址參數優先：如網址有 ?lang=zh-Hant 會直接切換語系，不再自動偵測
  * 用法：https://yourdomain.com/?lang=zh-Hant
  */
@@ -29,7 +29,7 @@ function detectUserLanguage() {
         return;
     }
     
-    const supportedLanguages = ['zh-Hant', 'zh-Hans', 'en', 'ja', 'ko', 'de', 'fr', 'it', 'nl'];
+    const supportedLanguages = ['zh-Hant', 'zh-Hans', 'en', 'ja', 'ko', 'de', 'fr', 'it', 'nl', 'es'];
     let browserLang = navigator.language || navigator.userLanguage || '';
     browserLang = browserLang.toLowerCase();
     
@@ -76,6 +76,9 @@ function detectUserLanguage() {
             break;
         case 'nl':
             localStorage.setItem('preferredLanguage', 'nl');
+            break;
+        case 'es':
+            localStorage.setItem('preferredLanguage', 'es');
             break;
         default:
             // 默認使用繁體中文
@@ -283,7 +286,8 @@ async function initEmotions() {
         'de': 'Erster Besuch, bitte empfehlen Sie 5 häufige emotionale Zustände',
         'fr': 'Première visite, veuillez recommander 5 états émotionnels courants',
         'it': 'Prima visita, si prega di consigliare 5 stati emotivi comuni',
-        'nl': 'Eerste bezoek, adviseer alstublieft 5 veelvoorkomende emotionele toestanden'
+        'nl': 'Eerste bezoek, adviseer alstublieft 5 veelvoorkomende emotionele toestanden',
+        'es': 'Primera visita, por favor recomiende 5 estados emocionales comunes'
     };
 
     const prompt = promptByLang[currentLanguage] || promptByLang['zh-Hant'];
@@ -326,7 +330,8 @@ function createLanguageSelector() {
         { code: 'de', name: 'Deutsch' },
         { code: 'fr', name: 'Français' },
         { code: 'it', name: 'Italiano' },
-        { code: 'nl', name: 'Nederlands' }
+        { code: 'nl', name: 'Nederlands' },
+        { code: 'es', name: 'Español' }
     ];
     
     languages.forEach(lang => {
@@ -370,7 +375,8 @@ async function generateEmotions(context, isFirst = false) {
             'de': ['Angst', 'Traurigkeit', 'Einsamkeit', 'Stress', 'Freude', t('otherSituation')],
             'fr': ['Anxiété', 'Tristesse', 'Solitude', 'Stress', 'Joie', t('otherSituation')],
             'it': ['Ansia', 'Tristezza', 'Solitudine', 'Stress', 'Gioia', t('otherSituation')],
-            'nl': ['Angst', 'Verdriet', 'Eenzaamheid', 'Stress', 'Vreugde', t('otherSituation')]
+            'nl': ['Angst', 'Verdriet', 'Eenzaamheid', 'Stress', 'Vreugde', t('otherSituation')],
+            'es': ['Ansiedad', 'Tristeza', 'Soledad', 'Estrés', 'Alegría', t('otherSituation')]
         };
         let result = fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
 
@@ -395,7 +401,9 @@ async function generateEmotions(context, isFirst = false) {
                                         ? 'Preghiera prima del pasto'
                                         : currentLanguage === 'nl'
                                             ? 'Gebed voor de maaltijd'
-                                            : '用餐前的禱告';
+                                            : currentLanguage === 'es'
+                                                ? 'Oración antes de comer'
+                                                : '用餐前的禱告';
             }
             const groupPrayer = currentLanguage === 'en'
                 ? 'Prayer for small group fellowship'
@@ -411,7 +419,9 @@ async function generateEmotions(context, isFirst = false) {
                                     ? 'Preghiera per la comunione in piccolo gruppo'
                                     : currentLanguage === 'nl'
                                         ? 'Gebed voor kleine groepsbijeenkomst'
-                                        : '與人小組聚會的禱告';
+                                        : currentLanguage === 'es'
+                                            ? 'Oración para reunión de grupo pequeño'
+                                            : '與人小組聚會的禱告';
 
             if (mealPrayer && !result.includes(mealPrayer)) result.push(mealPrayer);
             if (!result.includes(groupPrayer)) result.push(groupPrayer);
@@ -431,7 +441,7 @@ async function generateEmotions(context, isFirst = false) {
                 model: 'gpt-4.1-nano',
                 messages: [{
                     role: 'user',
-                    content: `參考以下情境提供5個${currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : currentLanguage === 'de' ? '德文' : currentLanguage === 'fr' ? '法文' : currentLanguage === 'it' ? '義大利文' : currentLanguage === 'nl' ? '荷蘭文' : '中文'}最近一般人常會有的情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
+                    content: `參考以下情境提供5個${currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : currentLanguage === 'de' ? '德文' : currentLanguage === 'fr' ? '法文' : currentLanguage === 'it' ? '義大利文' : currentLanguage === 'nl' ? '荷蘭文' : currentLanguage === 'es' ? '西班牙文' : '中文'}最近一般人常會有的情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
                     情境：${context}
                     範例輸出：${currentLanguage === 'en' ? 'Anxiety Sadness Loneliness Stress Joy ' + t('otherSituation') : 
                               currentLanguage === 'ja' ? '不安 悲しみ 孤独 ストレス 喜び ' + t('otherSituation') : 
@@ -486,7 +496,9 @@ async function generateEmotions(context, isFirst = false) {
                                         ? 'Preghiera prima del pasto'
                                         : currentLanguage === 'nl'
                                             ? 'Gebed voor de maaltijd'
-                                            : '用餐前的禱告';
+                                            : currentLanguage === 'es'
+                                                ? 'Oración antes de comer'
+                                                : '用餐前的禱告';
             }
             const groupPrayer = currentLanguage === 'en'
                 ? 'Prayer for small group fellowship'
@@ -502,7 +514,9 @@ async function generateEmotions(context, isFirst = false) {
                                     ? 'Preghiera per la comunione in piccolo gruppo'
                                     : currentLanguage === 'nl'
                                         ? 'Gebed voor kleine groepsbijeenkomst'
-                                        : '與人小組聚會的禱告';
+                                        : currentLanguage === 'es'
+                                            ? 'Oración para reunión de grupo pequeño'
+                                            : '與人小組聚會的禱告';
 
             if (mealPrayer && !result.includes(mealPrayer)) result.push(mealPrayer);
             if (!result.includes(groupPrayer)) result.push(groupPrayer);
@@ -521,7 +535,8 @@ async function generateEmotions(context, isFirst = false) {
             'de': ['Angst', 'Traurigkeit', 'Einsamkeit', 'Stress', 'Freude', t('otherSituation')],
             'fr': ['Anxiété', 'Tristesse', 'Solitude', 'Stress', 'Joie', t('otherSituation')],
             'it': ['Ansia', 'Tristezza', 'Solitudine', 'Stress', 'Gioia', t('otherSituation')],
-            'nl': ['Angst', 'Verdriet', 'Eenzaamheid', 'Stress', 'Vreugde', t('otherSituation')]
+            'nl': ['Angst', 'Verdriet', 'Eenzaamheid', 'Stress', 'Vreugde', t('otherSituation')],
+            'es': ['Ansiedad', 'Tristeza', 'Soledad', 'Estrés', 'Alegría', t('otherSituation')]
         };
         let result = fallbackEmotions[currentLanguage] || fallbackEmotions['zh-Hant'];
 
@@ -590,7 +605,8 @@ function createEmotionButtons(emotions) {
            emotion === 'Ich habe eine andere Situation' ||
            emotion === 'J\'ai une autre situation' ||
            emotion === 'Ho un\'altra situazione' ||
-           emotion === 'Ik heb een andere situatie') {
+           emotion === 'Ik heb een andere situatie' ||
+           emotion === 'Tengo otra situación') {
                 loadMoreEmotions();
             } else {
                 getEmotionalVerse(emotion, true);
@@ -605,7 +621,8 @@ function createEmotionButtons(emotions) {
            emotion === 'Ich habe eine andere Situation' ||
            emotion === 'J\'ai une autre situation' ||
            emotion === 'Ho un\'altra situazione' ||
-           emotion === 'Ik heb een andere situatie') {
+           emotion === 'Ik heb een andere situatie' ||
+           emotion === 'Tengo otra situación') {
             btn.style.backgroundColor = '#2196F3';
         }
         container.appendChild(btn);
@@ -892,9 +909,9 @@ async function getEmotionalVerse(emotion, isFirst = false) {
                 messages: [{
                     role: 'user',
                     content: `請針對「${emotion}」情緒：
-1. 提供合適聖經經文(格式：『經文』書名 章:節)${currentLanguage === 'en' || currentLanguage === 'ja' || currentLanguage === 'ko' || currentLanguage === 'de' || currentLanguage === 'fr' || currentLanguage === 'it' || currentLanguage === 'nl' ? '只需' + (currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : currentLanguage === 'de' ? '德文' : currentLanguage === 'fr' ? '法文' : currentLanguage === 'it' ? '義大利文' : currentLanguage === 'nl' ? '荷蘭文' : '') : '同時提出中英文'}
-2. 簡明的解說，50字內，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : currentLanguage === 'de' ? '用德文' : currentLanguage === 'fr' ? '用法文' : currentLanguage === 'it' ? '用義大利文' : currentLanguage === 'nl' ? '用荷蘭文' : '用繁體中文'}
-3. 禱告詞，${prayerLength}字以上，你是一個資深慈愛的牧師，同情用戶的狀態，深情地為用戶禱告，為用戶設身處地思考，祈求上帝給用戶安慰和力量，用華麗的辭藻，用詩歌般的語言，用最真摯的情感，寫出最感人的禱告詞，激發用戶的感受，讓靈性灌注與降臨，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : currentLanguage === 'de' ? '用德文' : currentLanguage === 'fr' ? '用法文' : currentLanguage === 'it' ? '用義大利文' : currentLanguage === 'nl' ? '用荷蘭文' : '用繁體中文'}
+1. 提供合適聖經經文(格式：『經文』書名 章:節)${currentLanguage === 'en' || currentLanguage === 'ja' || currentLanguage === 'ko' || currentLanguage === 'de' || currentLanguage === 'fr' || currentLanguage === 'it' || currentLanguage === 'nl' || currentLanguage === 'es' ? '只需' + (currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : currentLanguage === 'de' ? '德文' : currentLanguage === 'fr' ? '法文' : currentLanguage === 'it' ? '義大利文' : currentLanguage === 'nl' ? '荷蘭文' : currentLanguage === 'es' ? '西班牙文' : '') : '同時提出中英文'}
+2. 簡明的解說，50字內，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : currentLanguage === 'de' ? '用德文' : currentLanguage === 'fr' ? '用法文' : currentLanguage === 'it' ? '用義大利文' : currentLanguage === 'nl' ? '用荷蘭文' : currentLanguage === 'es' ? '用西班牙文' : '用繁體中文'}
+3. 禱告詞，${prayerLength}字以上，你是一個資深慈愛的牧師，同情用戶的狀態，深情地為用戶禱告，為用戶設身處地思考，祈求上帝給用戶安慰和力量，用華麗的辭藻，用詩歌般的語言，用最真摯的情感，寫出最感人的禱告詞，激發用戶的感受，讓靈性灌注與降臨，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : currentLanguage === 'de' ? '用德文' : currentLanguage === 'fr' ? '用法文' : currentLanguage === 'it' ? '用義大利文' : currentLanguage === 'nl' ? '用荷蘭文' : currentLanguage === 'es' ? '用西班牙文' : '用繁體中文'}
 請用以下格式回應：
 【${t('scripture').replace('：', '')}】{內容}
 【${t('explanation').replace('：', '')}】{解說}
