@@ -308,7 +308,9 @@ function updateEmotionButtons() {
             btn.textContent === '我有其他状况' || 
             btn.textContent === 'I have another situation' ||
             btn.textContent === '他の状況があります' ||
-            btn.textContent === '다른 상황이 있어요') {
+            btn.textContent === '다른 상황이 있어요' ||
+            btn.textContent === 'Ich habe eine andere Situation' ||
+            btn.textContent === 'J\'ai une autre situation') {
             btn.textContent = t('otherSituation');
         }
     });
@@ -324,7 +326,9 @@ function updateVerseContent() {
         verseElement.textContent.includes('正在寻找合适的经文') || 
         verseElement.textContent.includes('Finding appropriate scripture') ||
         verseElement.textContent.includes('適切な聖書の言葉を探しています') ||
-        verseElement.textContent.includes('적절한 성경 구절을 찾는 중')) {
+        verseElement.textContent.includes('적절한 성경 구절을 찾는 중') ||
+        verseElement.textContent.includes('Suche nach passender Bibelstelle') ||
+        verseElement.textContent.includes('Recherche d\'un verset approprié')) {
         verseElement.innerHTML = t('loadingVerse');
         return;
     }
@@ -334,7 +338,9 @@ function updateVerseContent() {
         verseElement.textContent.includes('API密钥未设置') || 
         verseElement.textContent.includes('API key not set') ||
         verseElement.textContent.includes('APIキーが設定されていません') ||
-        verseElement.textContent.includes('API 키가 설정되지 않았습니다')) {
+        verseElement.textContent.includes('API 키가 설정되지 않았습니다') ||
+        verseElement.textContent.includes('API-Schlüssel nicht gesetzt') ||
+        verseElement.textContent.includes('Clé API non définie')) {
         verseElement.innerHTML = t('apiKeyNotSet');
         return;
     }
@@ -343,7 +349,9 @@ function updateVerseContent() {
         verseElement.textContent.includes('获取经文时出错') || 
         verseElement.textContent.includes('Error getting scripture') ||
         verseElement.textContent.includes('聖書の言葉の取得中にエラーが発生しました') ||
-        verseElement.textContent.includes('성경 구절을 가져오는 중 오류가 발생했습니다')) {
+        verseElement.textContent.includes('성경 구절을 가져오는 중 오류가 발생했습니다') ||
+        verseElement.textContent.includes('Fehler beim Abrufen der Bibelstelle') ||
+        verseElement.textContent.includes('Erreur lors de la récupération des écritures')) {
         verseElement.innerHTML = t('errorGettingVerse');
         return;
     }
