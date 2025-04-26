@@ -223,6 +223,38 @@ const translations = {
         languageSelector: 'Langue',
         continuePrayer: 'Continuer avec une prière plus longue',
         prayerLabel: 'Prière'
+    },
+    // Italian
+    'it': {
+        title: 'Preghiamo insieme',
+        backButton: '↩ Emozioni precedenti',
+        loadingEmotions: '⏳ Ricerca di altre emozioni...',
+        customEmotionLabel: 'Per favore descrivi la tua situazione attuale:',
+        submitButton: 'Invia',
+        resetButton: 'Reimposta selezione emozioni',
+        otherSituation: 'Ho un\'altra situazione',
+        loadingVerse: '⏳ Ricerca di un versetto appropriato...',
+        verseForEmotion: '📖 Per coloro che provano "{emotion}":',
+        scripture: 'Scrittura:',
+        explanation: 'Spiegazione:',
+        prayer: 'Preghiera:',
+        playPrayer: '▶ Ascolta la preghiera',
+        generatingAudio: '⏳ Generazione dell\'audio...',
+        voiceSelector: 'Seleziona voce',
+        alloy: 'Alloy (Equilibrata)',
+        echo: 'Echo (Profonda)',
+        fable: 'Fable (Calda)',
+        onyx: 'Onyx (Forte)',
+        nova: 'Nova (Amichevole)',
+        shimmer: 'Shimmer (Chiara)',
+        apiKeyNotSet: '❌ Chiave API non impostata, impossibile recuperare le scritture',
+        errorGettingVerse: '❌ Errore durante il recupero delle scritture, riprova più tardi',
+        audioPlayError: 'Impossibile riprodurre l\'audio, riprova più tardi',
+        parseError: '⚠️ Impossibile analizzare la risposta, ecco il contenuto originale:',
+        apiKeyNotSetAudio: 'Chiave API non impostata, impossibile riprodurre l\'audio',
+        languageSelector: 'Lingua',
+        continuePrayer: 'Continua con una preghiera più lunga',
+        prayerLabel: 'Preghiera'
     }
 };
 
@@ -310,7 +342,8 @@ function updateEmotionButtons() {
             btn.textContent === '他の状況があります' ||
             btn.textContent === '다른 상황이 있어요' ||
             btn.textContent === 'Ich habe eine andere Situation' ||
-            btn.textContent === 'J\'ai une autre situation') {
+            btn.textContent === 'J\'ai une autre situation' ||
+            btn.textContent === 'Ho un\'altra situazione') {
             btn.textContent = t('otherSituation');
         }
     });
@@ -328,7 +361,8 @@ function updateVerseContent() {
         verseElement.textContent.includes('適切な聖書の言葉を探しています') ||
         verseElement.textContent.includes('적절한 성경 구절을 찾는 중') ||
         verseElement.textContent.includes('Suche nach passender Bibelstelle') ||
-        verseElement.textContent.includes('Recherche d\'un verset approprié')) {
+        verseElement.textContent.includes('Recherche d\'un verset approprié') ||
+        verseElement.textContent.includes('Ricerca di un versetto appropriato')) {
         verseElement.innerHTML = t('loadingVerse');
         return;
     }
@@ -340,7 +374,8 @@ function updateVerseContent() {
         verseElement.textContent.includes('APIキーが設定されていません') ||
         verseElement.textContent.includes('API 키가 설정되지 않았습니다') ||
         verseElement.textContent.includes('API-Schlüssel nicht gesetzt') ||
-        verseElement.textContent.includes('Clé API non définie')) {
+        verseElement.textContent.includes('Clé API non définie') ||
+        verseElement.textContent.includes('Chiave API non impostata')) {
         verseElement.innerHTML = t('apiKeyNotSet');
         return;
     }
@@ -351,7 +386,8 @@ function updateVerseContent() {
         verseElement.textContent.includes('聖書の言葉の取得中にエラーが発生しました') ||
         verseElement.textContent.includes('성경 구절을 가져오는 중 오류가 발생했습니다') ||
         verseElement.textContent.includes('Fehler beim Abrufen der Bibelstelle') ||
-        verseElement.textContent.includes('Erreur lors de la récupération des écritures')) {
+        verseElement.textContent.includes('Erreur lors de la récupération des écritures') ||
+        verseElement.textContent.includes('Errore durante il recupero delle scritture')) {
         verseElement.innerHTML = t('errorGettingVerse');
         return;
     }
