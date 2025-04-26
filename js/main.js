@@ -421,13 +421,14 @@ async function generateEmotions(context, isFirst = false) {
                 model: 'gpt-4.1-nano',
                 messages: [{
                     role: 'user',
-                    content: `參考以下情境提供5個${currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : currentLanguage === 'de' ? '德文' : currentLanguage === 'fr' ? '法文' : '中文'}最近一般人常會有的情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
+                    content: `參考以下情境提供5個${currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : currentLanguage === 'de' ? '德文' : currentLanguage === 'fr' ? '法文' : currentLanguage === 'it' ? '義大利文' : '中文'}最近一般人常會有的情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
                     情境：${context}
                     範例輸出：${currentLanguage === 'en' ? 'Anxiety Sadness Loneliness Stress Joy ' + t('otherSituation') : 
                               currentLanguage === 'ja' ? '不安 悲しみ 孤独 ストレス 喜び ' + t('otherSituation') : 
                               currentLanguage === 'ko' ? '불안 슬픔 외로움 스트레스 기쁨 ' + t('otherSituation') :
                               currentLanguage === 'de' ? 'Angst Traurigkeit Einsamkeit Stress Freude ' + t('otherSituation') :
-                              currentLanguage === 'fr' ? 'Anxiété Tristesse Solitude Stress Joie ' + t('otherSituation') : 
+                              currentLanguage === 'fr' ? 'Anxiété Tristesse Solitude Stress Joie ' + t('otherSituation') :
+                              currentLanguage === 'it' ? 'Ansia Tristezza Solitudine Stress Gioia ' + t('otherSituation') : 
                               '焦慮 悲傷 孤獨 壓力 喜樂 ' + t('otherSituation')}`
                 }],
                 max_tokens: 100,
@@ -525,7 +526,9 @@ async function generateEmotions(context, isFirst = false) {
                                 ? 'Gebet vor dem Essen'
                                 : currentLanguage === 'fr'
                                     ? 'Prière avant le repas'
-                                    : '用餐前的禱告';
+                                    : currentLanguage === 'it'
+                                        ? 'Preghiera prima del pasto'
+                                        : '用餐前的禱告';
             }
             const groupPrayer = currentLanguage === 'en'
                 ? 'Prayer for small group fellowship'
