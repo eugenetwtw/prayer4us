@@ -15,7 +15,12 @@ const initialData = {
     'zh-Hans': { visits: 0, audioGenerated: 0 },
     'en': { visits: 0, audioGenerated: 0 },
     'ja': { visits: 0, audioGenerated: 0 },
-    'ko': { visits: 0, audioGenerated: 0 }
+    'ko': { visits: 0, audioGenerated: 0 },
+    'de': { visits: 0, audioGenerated: 0 },
+    'fr': { visits: 0, audioGenerated: 0 },
+    'it': { visits: 0, audioGenerated: 0 },
+    'nl': { visits: 0, audioGenerated: 0 },
+    'es': { visits: 0, audioGenerated: 0 }
   }
 };
 
@@ -108,7 +113,7 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       console.log('[Counter API] Processing POST request. Body:', req.body); 
       const { action, language } = req.body;
-      const validLanguages = ['zh-Hant', 'zh-Hans', 'en', 'ja', 'ko'];
+      const validLanguages = ['zh-Hant', 'zh-Hans', 'en', 'ja', 'ko', 'de', 'fr', 'it', 'nl', 'es'];
       
       // Validate language
       if (!language || !validLanguages.includes(language)) {
