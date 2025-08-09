@@ -438,7 +438,7 @@ async function generateEmotions(context, isFirst = false) {
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'gpt-5-mini',
+                model: 'gpt-4.1-mini',
                 messages: [{
                     role: 'user',
                     content: `參考以下情境提供5個${currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : currentLanguage === 'de' ? '德文' : currentLanguage === 'fr' ? '法文' : currentLanguage === 'it' ? '義大利文' : currentLanguage === 'nl' ? '荷蘭文' : currentLanguage === 'es' ? '西班牙文' : '中文'}最近一般人常會有的情緒狀態(不要編號)，最後加「${t('otherSituation')}」，用空格分隔：
@@ -791,7 +791,7 @@ VOICE: [選擇的語音名稱，小寫]`;
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'gpt-5-mini',
+                model: 'gpt-4.1-mini',
                 messages: [{
                     role: 'user',
                     content: content
@@ -905,7 +905,7 @@ async function getEmotionalVerse(emotion, isFirst = false) {
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'gpt-5',
+                model: 'gpt-4.1',
                 messages: [{
                     role: 'user',
                     content: `請針對「${emotion}」情緒：
