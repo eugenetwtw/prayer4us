@@ -1,28 +1,37 @@
 export const config = {
-  maxDuration: 60,
+  runtime: 'edge',
 };
 
-export default async function handler(req, res) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
+export default async function handler(req) {
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    return new Response(null, {
+      status: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    });
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'API key not configured' });
+    return new Response(JSON.stringify({ error: 'API key not configured' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   try {
-    const { model, messages, max_tokens, temperature, voice, input, response_format, instructions } = req.body;
+    const { model, messages, max_tokens, temperature, voice, input, response_format, instructions } = await req.json();
 
     const isTTS = model === 'tts-1';
 
@@ -44,27 +53,35 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
-      return res.status(response.status).json({ error: errorText });
+      return new Response(JSON.stringify({ error: errorText }), {
+        status: response.status,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     if (isTTS) {
-      res.setHeader('Content-Type', 'audio/mpeg');
-      res.setHeader('Transfer-Encoding', 'chunked');
-      // Stream the audio response to avoid buffering the entire file
-      const reader = response.body.getReader();
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        res.write(Buffer.from(value));
-      }
-      return res.end();
+      // Stream audio directly back to client
+      return new Response(response.body, {
+        status: 200,
+        headers: {
+          'Content-Type': 'audio/mpeg',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
     } else {
       const data = await response.json();
-      return res.status(200).json(data);
+      return new Response(JSON.stringify(data), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
     }
   } catch (error) {
-    console.error('API route error:', error);
-    return res.status(500).json({ error: error.message || 'Internal Server Error' });
+    return new Response(JSON.stringify({ error: error.message || 'Internal Server Error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
