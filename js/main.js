@@ -979,7 +979,7 @@ function renderPrayerSegments(scripture, explanation) {
     // 如果有主題經文與解說，顯示在最上方
     if (typeof scripture === 'string' && typeof explanation === 'string') {
         html += `
-            <div style="text-align: left; max-width: 600px; margin: 20px auto;">
+            <div id="scripture-block" style="text-align: left; max-width: 600px; margin: 20px auto;">
                 <h3 style="color: #2c3e50;">${t('verseForEmotion', { emotion: prayerEmotion })}</h3>
                 <p style="font-size: 1.1em;">
                     <strong>${t('scripture')}</strong><br>
@@ -989,6 +989,9 @@ function renderPrayerSegments(scripture, explanation) {
                     <strong>${t('explanation')}</strong><br>
                     ${explanation.replace(/\n/g, '<br>')}
                 </p>
+                <div style="text-align:right;margin-top:6px;">
+                    <span onclick="copyScriptureText()" title="${t('copyText')}" style="cursor:pointer;font-size:0.95em;opacity:0.4;transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.4'">📋</span>
+                </div>
             </div>
         `;
     }
@@ -999,7 +1002,10 @@ function renderPrayerSegments(scripture, explanation) {
         html += `
         <div style="background:#f8f9fa;border-radius:10px;padding:18px 16px 12px 16px;margin-bottom:18px;box-shadow:0 2px 8px #0001;">
             <div style="font-weight:bold;color:#2c3e50;margin-bottom:8px;">${t('prayerLabel')}#${displayNumber}</div>
-            <div style="color:#2980b9;line-height:1.7;margin-bottom:12px;">${seg.text.replace(/\n/g, '<br>')}</div>
+            <div id="prayer-text-${idx}" style="color:#2980b9;line-height:1.7;margin-bottom:4px;">${seg.text.replace(/\n/g, '<br>')}</div>
+            <div style="text-align:right;margin-bottom:8px;">
+                <span onclick="copyPrayerText(${idx})" title="${t('copyText')}" style="cursor:pointer;font-size:0.95em;opacity:0.4;transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.4'">📋</span>
+            </div>
             <div id="audio-player-${idx}" style="margin-bottom:8px;">
                 <button onclick="playPrayerSegment(${idx})" id="play-button-${idx}">
                     <span id="play-text-${idx}">${t('playPrayer')}</span>
@@ -1044,7 +1050,10 @@ function renderPrayerLoading() {
         html += `
         <div style="background:#f8f9fa;border-radius:10px;padding:18px 16px 12px 16px;margin-bottom:18px;box-shadow:0 2px 8px #0001;">
             <div style="font-weight:bold;color:#2c3e50;margin-bottom:8px;">${t('prayerLabel')}#${displayNumber}</div>
-            <div style="color:#2980b9;line-height:1.7;margin-bottom:12px;">${seg.text.replace(/\n/g, '<br>')}</div>
+            <div id="prayer-text-${idx}" style="color:#2980b9;line-height:1.7;margin-bottom:4px;">${seg.text.replace(/\n/g, '<br>')}</div>
+            <div style="text-align:right;margin-bottom:8px;">
+                <span onclick="copyPrayerText(${idx})" title="${t('copyText')}" style="cursor:pointer;font-size:0.95em;opacity:0.4;transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.4'">📋</span>
+            </div>
             <div id="audio-player-${idx}" style="margin-bottom:8px;">
                 <button onclick="playPrayerSegment(${idx})" id="play-button-${idx}">
                     <span id="play-text-${idx}">${t('playPrayer')}</span>
@@ -1065,6 +1074,39 @@ function renderPrayerLoading() {
         `;
     });
     verseElement.innerHTML = html;
+}
+
+/**
+ * 複製禱告段落文字
+ */
+function copyPrayerText(idx) {
+    const el = document.getElementById(`prayer-text-${idx}`);
+    if (!el) return;
+    navigator.clipboard.writeText(el.innerText).then(() => {
+        showCopyFeedback(el);
+    });
+}
+
+/**
+ * 複製經文區塊文字
+ */
+function copyScriptureText() {
+    const el = document.getElementById('scripture-block');
+    if (!el) return;
+    navigator.clipboard.writeText(el.innerText).then(() => {
+        showCopyFeedback(el);
+    });
+}
+
+/**
+ * 顯示複製成功提示
+ */
+function showCopyFeedback(el) {
+    const tip = document.createElement('div');
+    tip.textContent = t('copied');
+    tip.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:6px 18px;border-radius:6px;font-size:0.9em;z-index:9999;';
+    document.body.appendChild(tip);
+    setTimeout(() => tip.remove(), 1200);
 }
 
 /**

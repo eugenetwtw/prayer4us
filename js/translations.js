@@ -30,7 +30,9 @@ const translations = {
         apiKeyNotSetAudio: 'API金鑰未設置，無法播放音頻',
         languageSelector: 'Language',
         continuePrayer: '接續更長的禱告',
-        prayerLabel: '禱告詞'
+        prayerLabel: '禱告詞',
+        copyText: '複製',
+        copied: '已複製'
     },
     // Simplified Chinese
     'zh-Hans': {
@@ -62,7 +64,9 @@ const translations = {
         apiKeyNotSetAudio: 'API密钥未设置，无法播放音频',
         languageSelector: 'Language',
         continuePrayer: '继续更长的祷告',
-        prayerLabel: '祷告词'
+        prayerLabel: '祷告词',
+        copyText: '复制',
+        copied: '已复制'
     },
     // English
     'en': {
@@ -94,7 +98,9 @@ const translations = {
         apiKeyNotSetAudio: 'API key not set, cannot play audio',
         languageSelector: 'Language',
         continuePrayer: 'Continue with a longer prayer',
-        prayerLabel: 'Prayer'
+        prayerLabel: 'Prayer',
+        copyText: 'Copy',
+        copied: 'Copied'
     },
     // Japanese
     'ja': {
@@ -126,7 +132,9 @@ const translations = {
         apiKeyNotSetAudio: 'APIキーが設定されていません、音声を再生できません',
         languageSelector: 'Language',
         continuePrayer: 'さらに長い祈りを続ける',
-        prayerLabel: '祈り'
+        prayerLabel: '祈り',
+        copyText: 'コピー',
+        copied: 'コピーしました'
     },
     // Korean
     'ko': {
@@ -158,7 +166,9 @@ const translations = {
         apiKeyNotSetAudio: 'API 키가 설정되지 않았습니다. 오디오를 재생할 수 없습니다',
         languageSelector: 'Language',
         continuePrayer: '더 긴 기도를 이어가기',
-        prayerLabel: '기도'
+        prayerLabel: '기도',
+        copyText: '복사',
+        copied: '복사됨'
     },
     // German
     'de': {
@@ -190,7 +200,9 @@ const translations = {
         apiKeyNotSetAudio: 'API-Schlüssel nicht gesetzt, Audio kann nicht abgespielt werden',
         languageSelector: 'Sprache',
         continuePrayer: 'Mit einem längeren Gebet fortfahren',
-        prayerLabel: 'Gebet'
+        prayerLabel: 'Gebet',
+        copyText: 'Kopieren',
+        copied: 'Kopiert'
     },
     // French
     'fr': {
@@ -222,7 +234,9 @@ const translations = {
         apiKeyNotSetAudio: 'Clé API non définie, impossible de lire l\'audio',
         languageSelector: 'Langue',
         continuePrayer: 'Continuer avec une prière plus longue',
-        prayerLabel: 'Prière'
+        prayerLabel: 'Prière',
+        copyText: 'Copier',
+        copied: 'Copié'
     },
     // Italian
     'it': {
@@ -254,7 +268,9 @@ const translations = {
         apiKeyNotSetAudio: 'Chiave API non impostata, impossibile riprodurre l\'audio',
         languageSelector: 'Lingua',
         continuePrayer: 'Continua con una preghiera più lunga',
-        prayerLabel: 'Preghiera'
+        prayerLabel: 'Preghiera',
+        copyText: 'Copia',
+        copied: 'Copiato'
     },
     // Dutch
     'nl': {
@@ -286,7 +302,9 @@ const translations = {
         apiKeyNotSetAudio: 'API-sleutel niet ingesteld, kan audio niet afspelen',
         languageSelector: 'Taal',
         continuePrayer: 'Doorgaan met een langer gebed',
-        prayerLabel: 'Gebed'
+        prayerLabel: 'Gebed',
+        copyText: 'Kopiëren',
+        copied: 'Gekopieerd'
     },
     // Spanish
     'es': {
@@ -318,7 +336,9 @@ const translations = {
         apiKeyNotSetAudio: 'Clave API no configurada, no se puede reproducir el audio',
         languageSelector: 'Idioma',
         continuePrayer: 'Continuar con una oración más larga',
-        prayerLabel: 'Oración'
+        prayerLabel: 'Oración',
+        copyText: 'Copiar',
+        copied: 'Copiado'
     }
 };
 
