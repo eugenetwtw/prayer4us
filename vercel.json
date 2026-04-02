@@ -4,6 +4,10 @@
   "outputDirectory": "",
   "installCommand": "",
   "framework": null,
-  "rewrites": [
-  ]
+  "functions": {
+    "api/chat.js": {
+      "maxDuration": 60
+    }
+  },
+  "rewrites": []
 }

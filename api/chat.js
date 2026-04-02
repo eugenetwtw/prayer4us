@@ -1,9 +1,5 @@
 export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '2mb',
-    },
-  },
+  maxDuration: 60,
 };
 
 export default async function handler(req, res) {
@@ -53,9 +49,16 @@ export default async function handler(req, res) {
     }
 
     if (isTTS) {
-      const audioBuffer = await response.arrayBuffer();
       res.setHeader('Content-Type', 'audio/mpeg');
-      return res.status(200).send(Buffer.from(audioBuffer));
+      res.setHeader('Transfer-Encoding', 'chunked');
+      // Stream the audio response to avoid buffering the entire file
+      const reader = response.body.getReader();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        res.write(Buffer.from(value));
+      }
+      return res.end();
     } else {
       const data = await response.json();
       return res.status(200).json(data);
