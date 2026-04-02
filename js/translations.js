@@ -33,7 +33,8 @@ const translations = {
         prayerLabel: '禱告詞',
         copyText: '複製',
         copied: '已複製',
-        downloadAudio: '下載音頻'
+        downloadAudio: '下載音頻',
+        privacyNotice: '這是開源專案，我們不存放任何您禱告的資訊，也沒有 Cookie，我們只為傳福音。'
     },
     // Simplified Chinese
     'zh-Hans': {
@@ -68,7 +69,8 @@ const translations = {
         prayerLabel: '祷告词',
         copyText: '复制',
         copied: '已复制',
-        downloadAudio: '下载音频'
+        downloadAudio: '下载音频',
+        privacyNotice: '这是开源项目，我们不存放任何您祷告的信息，也没有 Cookie，我们只为传福音。'
     },
     // English
     'en': {
@@ -103,7 +105,8 @@ const translations = {
         prayerLabel: 'Prayer',
         copyText: 'Copy',
         copied: 'Copied',
-        downloadAudio: 'Download audio'
+        downloadAudio: 'Download audio',
+        privacyNotice: 'This is an open-source project. We do not store any of your prayer data or use cookies. Our sole purpose is to spread the Gospel.'
     },
     // Japanese
     'ja': {
@@ -138,7 +141,8 @@ const translations = {
         prayerLabel: '祈り',
         copyText: 'コピー',
         copied: 'コピーしました',
-        downloadAudio: '音声をダウンロード'
+        downloadAudio: '音声をダウンロード',
+        privacyNotice: 'これはオープンソースプロジェクトです。お祈りの情報を保存せず、Cookieも使用しません。福音を伝えることだけが目的です。'
     },
     // Korean
     'ko': {
@@ -173,7 +177,8 @@ const translations = {
         prayerLabel: '기도',
         copyText: '복사',
         copied: '복사됨',
-        downloadAudio: '오디오 다운로드'
+        downloadAudio: '오디오 다운로드',
+        privacyNotice: '이것은 오픈소스 프로젝트입니다. 기도 정보를 저장하지 않으며 쿠키도 사용하지 않습니다. 오직 복음 전파만을 위합니다.'
     },
     // German
     'de': {
@@ -208,7 +213,8 @@ const translations = {
         prayerLabel: 'Gebet',
         copyText: 'Kopieren',
         copied: 'Kopiert',
-        downloadAudio: 'Audio herunterladen'
+        downloadAudio: 'Audio herunterladen',
+        privacyNotice: 'Dies ist ein Open-Source-Projekt. Wir speichern keine Ihrer Gebetsdaten und verwenden keine Cookies. Unser einziger Zweck ist die Verbreitung des Evangeliums.'
     },
     // French
     'fr': {
@@ -243,7 +249,8 @@ const translations = {
         prayerLabel: 'Prière',
         copyText: 'Copier',
         copied: 'Copié',
-        downloadAudio: 'Télécharger l\'audio'
+        downloadAudio: 'Télécharger l\'audio',
+        privacyNotice: 'Ceci est un projet open source. Nous ne stockons aucune de vos données de prière et n\'utilisons pas de cookies. Notre seul but est de répandre l\'Évangile.'
     },
     // Italian
     'it': {
@@ -278,7 +285,8 @@ const translations = {
         prayerLabel: 'Preghiera',
         copyText: 'Copia',
         copied: 'Copiato',
-        downloadAudio: 'Scarica audio'
+        downloadAudio: 'Scarica audio',
+        privacyNotice: 'Questo è un progetto open source. Non memorizziamo alcuna informazione sulle tue preghiere e non utilizziamo cookie. Il nostro unico scopo è diffondere il Vangelo.'
     },
     // Dutch
     'nl': {
@@ -313,7 +321,8 @@ const translations = {
         prayerLabel: 'Gebed',
         copyText: 'Kopiëren',
         copied: 'Gekopieerd',
-        downloadAudio: 'Audio downloaden'
+        downloadAudio: 'Audio downloaden',
+        privacyNotice: 'Dit is een open-source project. Wij slaan geen van uw gebedsgegevens op en gebruiken geen cookies. Ons enige doel is het verspreiden van het Evangelie.'
     },
     // Spanish
     'es': {
@@ -348,7 +357,8 @@ const translations = {
         prayerLabel: 'Oración',
         copyText: 'Copiar',
         copied: 'Copiado',
-        downloadAudio: 'Descargar audio'
+        downloadAudio: 'Descargar audio',
+        privacyNotice: 'Este es un proyecto de código abierto. No almacenamos ninguna información de sus oraciones ni usamos cookies. Nuestro único propósito es difundir el Evangelio.'
     }
 };
 
@@ -404,6 +414,12 @@ function updatePageLanguage() {
     
     // Update voice selector if it exists
     updateVoiceSelector();
+
+    // Update privacy notice
+    const privacyNotice = document.getElementById('privacy-notice');
+    if (privacyNotice) {
+        privacyNotice.innerHTML = `<a href="https://github.com/eugenetwtw/prayer4us" target="_blank" style="color:#888;text-decoration:none;">Open Source</a> — ${t('privacyNotice')}`;
+    }
 }
 
 // Update emotion buttons with translated text
