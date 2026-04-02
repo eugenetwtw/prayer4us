@@ -243,7 +243,7 @@ function renderPersistentCustomEmotionInput() {
     submitBtn.onclick = function() {
         const customEmotion = textarea.value.trim();
         if (customEmotion) {
-            getEmotionalVerse(customEmotion);
+            getEmotionalVerse(customEmotion, true);
         } else {
             alert('請輸入您的困難狀況');
         }
