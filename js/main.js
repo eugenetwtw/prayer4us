@@ -1156,6 +1156,21 @@ async function playPrayerSegment(idx) {
         audioElement.src = audioUrl;
         audioElement.style.display = 'block';
         audioElement.play();
+
+        // 顯示下載按鈕
+        let dlBtn = document.getElementById(`download-audio-${idx}`);
+        if (!dlBtn) {
+            dlBtn = document.createElement('a');
+            dlBtn.id = `download-audio-${idx}`;
+            dlBtn.title = t('downloadAudio');
+            dlBtn.style.cssText = 'cursor:pointer;font-size:1.1em;margin-left:10px;text-decoration:none;opacity:0.45;transition:opacity 0.2s;vertical-align:middle;';
+            dlBtn.textContent = '⬇️';
+            dlBtn.onmouseover = function() { this.style.opacity = '1'; };
+            dlBtn.onmouseout = function() { this.style.opacity = '0.45'; };
+            audioElement.parentNode.insertBefore(dlBtn, audioElement.nextSibling);
+        }
+        dlBtn.href = audioUrl;
+        dlBtn.download = `prayer-${idx + 1}.mp3`;
     } catch (error) {
         console.error('播放失敗:', error);
         alert(t('audioPlayError'));
@@ -1217,6 +1232,21 @@ async function playPrayer(encodedText, encodedInstructions = '') {
         audioElement.src = audioUrl;
         audioElement.style.display = 'block';
         audioElement.play();
+
+        // 顯示下載按鈕
+        let dlBtn = document.getElementById('download-audio-main');
+        if (!dlBtn) {
+            dlBtn = document.createElement('a');
+            dlBtn.id = 'download-audio-main';
+            dlBtn.title = t('downloadAudio');
+            dlBtn.style.cssText = 'cursor:pointer;font-size:1.1em;margin-left:10px;text-decoration:none;opacity:0.45;transition:opacity 0.2s;vertical-align:middle;';
+            dlBtn.textContent = '⬇️';
+            dlBtn.onmouseover = function() { this.style.opacity = '1'; };
+            dlBtn.onmouseout = function() { this.style.opacity = '0.45'; };
+            audioElement.parentNode.insertBefore(dlBtn, audioElement.nextSibling);
+        }
+        dlBtn.href = audioUrl;
+        dlBtn.download = 'prayer.mp3';
     } catch (error) {
         console.error('播放失敗:', error);
         alert(t('audioPlayError'));
@@ -1225,7 +1255,7 @@ async function playPrayer(encodedText, encodedInstructions = '') {
         playText.style.display = 'inline';
         spinner.style.display = 'none';
     }
-} // Add missing closing brace for playPrayer function
+}
 
 // 檢查API端點是否可用，如果不可用，則禁用計數器功能
 async function checkCounterEndpoint() {

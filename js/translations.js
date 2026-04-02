@@ -32,7 +32,8 @@ const translations = {
         continuePrayer: '接續更長的禱告',
         prayerLabel: '禱告詞',
         copyText: '複製',
-        copied: '已複製'
+        copied: '已複製',
+        downloadAudio: '下載音頻'
     },
     // Simplified Chinese
     'zh-Hans': {
@@ -66,7 +67,8 @@ const translations = {
         continuePrayer: '继续更长的祷告',
         prayerLabel: '祷告词',
         copyText: '复制',
-        copied: '已复制'
+        copied: '已复制',
+        downloadAudio: '下载音频'
     },
     // English
     'en': {
@@ -100,7 +102,8 @@ const translations = {
         continuePrayer: 'Continue with a longer prayer',
         prayerLabel: 'Prayer',
         copyText: 'Copy',
-        copied: 'Copied'
+        copied: 'Copied',
+        downloadAudio: 'Download audio'
     },
     // Japanese
     'ja': {
@@ -134,7 +137,8 @@ const translations = {
         continuePrayer: 'さらに長い祈りを続ける',
         prayerLabel: '祈り',
         copyText: 'コピー',
-        copied: 'コピーしました'
+        copied: 'コピーしました',
+        downloadAudio: '音声をダウンロード'
     },
     // Korean
     'ko': {
@@ -168,7 +172,8 @@ const translations = {
         continuePrayer: '더 긴 기도를 이어가기',
         prayerLabel: '기도',
         copyText: '복사',
-        copied: '복사됨'
+        copied: '복사됨',
+        downloadAudio: '오디오 다운로드'
     },
     // German
     'de': {
@@ -202,7 +207,8 @@ const translations = {
         continuePrayer: 'Mit einem längeren Gebet fortfahren',
         prayerLabel: 'Gebet',
         copyText: 'Kopieren',
-        copied: 'Kopiert'
+        copied: 'Kopiert',
+        downloadAudio: 'Audio herunterladen'
     },
     // French
     'fr': {
@@ -236,7 +242,8 @@ const translations = {
         continuePrayer: 'Continuer avec une prière plus longue',
         prayerLabel: 'Prière',
         copyText: 'Copier',
-        copied: 'Copié'
+        copied: 'Copié',
+        downloadAudio: 'Télécharger l\'audio'
     },
     // Italian
     'it': {
@@ -270,7 +277,8 @@ const translations = {
         continuePrayer: 'Continua con una preghiera più lunga',
         prayerLabel: 'Preghiera',
         copyText: 'Copia',
-        copied: 'Copiato'
+        copied: 'Copiato',
+        downloadAudio: 'Scarica audio'
     },
     // Dutch
     'nl': {
@@ -304,7 +312,8 @@ const translations = {
         continuePrayer: 'Doorgaan met een langer gebed',
         prayerLabel: 'Gebed',
         copyText: 'Kopiëren',
-        copied: 'Gekopieerd'
+        copied: 'Gekopieerd',
+        downloadAudio: 'Audio downloaden'
     },
     // Spanish
     'es': {
@@ -338,7 +347,8 @@ const translations = {
         continuePrayer: 'Continuar con una oración más larga',
         prayerLabel: 'Oración',
         copyText: 'Copiar',
-        copied: 'Copiado'
+        copied: 'Copiado',
+        downloadAudio: 'Descargar audio'
     }
 };
 
