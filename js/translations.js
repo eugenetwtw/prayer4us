@@ -34,7 +34,7 @@ const translations = {
         copyText: '複製',
         copied: '已複製',
         downloadAudio: '下載音頻',
-        privacyNotice: '這是開源專案，我們不存放任何您禱告的資訊，也沒有 Cookie，我們只為傳福音。'
+        privacyNotice: '這是開源專案，我們不存放任何您禱告的資訊，也沒有 Cookie，我們只為傳福音。目前 API 費用由我們奉獻支付——您每一次的禱告都是主的旨意，作為祂的見證，將一切榮耀歸給上帝。'
     },
     // Simplified Chinese
     'zh-Hans': {
@@ -70,7 +70,7 @@ const translations = {
         copyText: '复制',
         copied: '已复制',
         downloadAudio: '下载音频',
-        privacyNotice: '这是开源项目，我们不存放任何您祷告的信息，也没有 Cookie，我们只为传福音。'
+        privacyNotice: '这是开源项目，我们不存放任何您祷告的信息，也没有 Cookie，我们只为传福音。目前 API 费用由我们奉献支付——您每一次的祷告都是主的旨意，作为祂的见证，将一切荣耀归给上帝。'
     },
     // English
     'en': {
@@ -106,7 +106,7 @@ const translations = {
         copyText: 'Copy',
         copied: 'Copied',
         downloadAudio: 'Download audio',
-        privacyNotice: 'This is an open-source project. We do not store any of your prayer data or use cookies. Our sole purpose is to spread the Gospel.'
+        privacyNotice: 'This is an open-source project. We do not store any of your prayer data or use cookies. Our sole purpose is to spread the Gospel. The API costs are covered by our offering — every prayer you make is God\'s will, a testimony to Him, and all glory be to God.'
     },
     // Japanese
     'ja': {
@@ -142,7 +142,7 @@ const translations = {
         copyText: 'コピー',
         copied: 'コピーしました',
         downloadAudio: '音声をダウンロード',
-        privacyNotice: 'これはオープンソースプロジェクトです。お祈りの情報を保存せず、Cookieも使用しません。福音を伝えることだけが目的です。'
+        privacyNotice: 'これはオープンソースプロジェクトです。お祈りの情報を保存せず、Cookieも使用しません。福音を伝えることだけが目的です。API費用は私たちの献金で賄っています——あなたの祈りのひとつひとつが主の御心であり、主の証しとして、すべての栄光を神に帰します。'
     },
     // Korean
     'ko': {
@@ -178,7 +178,7 @@ const translations = {
         copyText: '복사',
         copied: '복사됨',
         downloadAudio: '오디오 다운로드',
-        privacyNotice: '이것은 오픈소스 프로젝트입니다. 기도 정보를 저장하지 않으며 쿠키도 사용하지 않습니다. 오직 복음 전파만을 위합니다.'
+        privacyNotice: '이것은 오픈소스 프로젝트입니다. 기도 정보를 저장하지 않으며 쿠키도 사용하지 않습니다. 오직 복음 전파만을 위합니다. API 비용은 저희의 헌금으로 충당합니다 — 여러분의 모든 기도는 주님의 뜻이며, 그분의 증거로서 모든 영광을 하나님께 돌립니다.'
     },
     // German
     'de': {
@@ -214,7 +214,7 @@ const translations = {
         copyText: 'Kopieren',
         copied: 'Kopiert',
         downloadAudio: 'Audio herunterladen',
-        privacyNotice: 'Dies ist ein Open-Source-Projekt. Wir speichern keine Ihrer Gebetsdaten und verwenden keine Cookies. Unser einziger Zweck ist die Verbreitung des Evangeliums.'
+        privacyNotice: 'Dies ist ein Open-Source-Projekt. Wir speichern keine Ihrer Gebetsdaten und verwenden keine Cookies. Unser einziger Zweck ist die Verbreitung des Evangeliums. Die API-Kosten werden durch unsere Spende getragen — jedes Ihrer Gebete ist Gottes Wille, ein Zeugnis für Ihn, und alle Ehre gebührt Gott.'
     },
     // French
     'fr': {
@@ -250,7 +250,7 @@ const translations = {
         copyText: 'Copier',
         copied: 'Copié',
         downloadAudio: 'Télécharger l\'audio',
-        privacyNotice: 'Ceci est un projet open source. Nous ne stockons aucune de vos données de prière et n\'utilisons pas de cookies. Notre seul but est de répandre l\'Évangile.'
+        privacyNotice: 'Ceci est un projet open source. Nous ne stockons aucune de vos données de prière et n\'utilisons pas de cookies. Notre seul but est de répandre l\'Évangile. Les coûts de l\'API sont couverts par notre offrande — chacune de vos prières est la volonté de Dieu, un témoignage pour Lui, et toute la gloire revient à Dieu.'
     },
     // Italian
     'it': {
@@ -286,7 +286,7 @@ const translations = {
         copyText: 'Copia',
         copied: 'Copiato',
         downloadAudio: 'Scarica audio',
-        privacyNotice: 'Questo è un progetto open source. Non memorizziamo alcuna informazione sulle tue preghiere e non utilizziamo cookie. Il nostro unico scopo è diffondere il Vangelo.'
+        privacyNotice: 'Questo è un progetto open source. Non memorizziamo alcuna informazione sulle tue preghiere e non utilizziamo cookie. Il nostro unico scopo è diffondere il Vangelo. I costi dell\'API sono coperti dalla nostra offerta — ogni tua preghiera è la volontà di Dio, una testimonianza per Lui, e tutta la gloria sia a Dio.'
     },
     // Dutch
     'nl': {
@@ -322,7 +322,7 @@ const translations = {
         copyText: 'Kopiëren',
         copied: 'Gekopieerd',
         downloadAudio: 'Audio downloaden',
-        privacyNotice: 'Dit is een open-source project. Wij slaan geen van uw gebedsgegevens op en gebruiken geen cookies. Ons enige doel is het verspreiden van het Evangelie.'
+        privacyNotice: 'Dit is een open-source project. Wij slaan geen van uw gebedsgegevens op en gebruiken geen cookies. Ons enige doel is het verspreiden van het Evangelie. De API-kosten worden gedekt door onze offergave — elk van uw gebeden is Gods wil, een getuigenis voor Hem, en alle eer zij aan God.'
     },
     // Spanish
     'es': {
@@ -358,7 +358,7 @@ const translations = {
         copyText: 'Copiar',
         copied: 'Copiado',
         downloadAudio: 'Descargar audio',
-        privacyNotice: 'Este es un proyecto de código abierto. No almacenamos ninguna información de sus oraciones ni usamos cookies. Nuestro único propósito es difundir el Evangelio.'
+        privacyNotice: 'Este es un proyecto de código abierto. No almacenamos ninguna información de sus oraciones ni usamos cookies. Nuestro único propósito es difundir el Evangelio. Los costos de la API son cubiertos por nuestra ofrenda — cada una de sus oraciones es la voluntad de Dios, un testimonio para Él, y toda la gloria sea para Dios.'
     }
 };
 
