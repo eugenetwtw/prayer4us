@@ -860,6 +860,15 @@ async function getEmotionalVerse(emotion, isFirst = false) {
         document.getElementById('verse').innerHTML = t('apiKeyNotSet');
         return;
     }
+    // Google Ads conversion tracking
+    if (typeof gtag === 'function') {
+        gtag('event', 'conversion', {
+            'send_to': 'AW-16458498187/YOUR_CONVERSION_LABEL',
+            'value': 1.0,
+            'currency': 'TWD'
+        });
+    }
+
     if (isFirst) {
         prayerSegments = [];
         prayerEmotion = emotion;
