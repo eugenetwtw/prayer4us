@@ -15,6 +15,7 @@ if (urlLang && typeof setCurrentLanguage === 'function') {
  // 獲取API金鑰
 let apiKey = '';
 let currentLanguage = '';
+let currentProvider = localStorage.getItem('preferredProvider') || 'openai';
 
 // Counter API path - adjusted for actual deployment structure
 const counterApiPath = '/api/counter';
@@ -351,7 +352,37 @@ langSelector.addEventListener('change', function() {
     // 組裝語言選擇器
     langContainer.appendChild(langLabel);
     langContainer.appendChild(langSelector);
-    
+
+    // 模型供應商選擇器
+    const providerLabel = document.createElement('span');
+    providerLabel.textContent = ' AI: ';
+    providerLabel.style.marginLeft = '10px';
+    providerLabel.style.marginRight = '5px';
+
+    const providerSelector = document.createElement('select');
+    providerSelector.id = 'providerSelector';
+    providerSelector.style.padding = '5px';
+    providerSelector.style.borderRadius = '5px';
+
+    [
+        { code: 'openai', name: 'OpenAI' },
+        { code: 'grok', name: 'Grok' },
+    ].forEach(p => {
+        const option = document.createElement('option');
+        option.value = p.code;
+        option.textContent = p.name;
+        option.selected = currentProvider === p.code;
+        providerSelector.appendChild(option);
+    });
+
+    providerSelector.addEventListener('change', function() {
+        currentProvider = this.value;
+        localStorage.setItem('preferredProvider', currentProvider);
+    });
+
+    langContainer.appendChild(providerLabel);
+    langContainer.appendChild(providerSelector);
+
     // 添加到頁面
     document.body.appendChild(langContainer);
 }
@@ -433,6 +464,7 @@ async function generateEmotions(context, isFirst = false) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
+                provider: currentProvider,
                 model: 'gpt-4.1-mini',
                 messages: [{
                     role: 'user',
@@ -785,6 +817,7 @@ VOICE: [選擇的語音名稱，小寫]`;
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
+                provider: currentProvider,
                 model: 'gpt-4.1-mini',
                 messages: [{
                     role: 'user',
@@ -907,6 +940,7 @@ async function getEmotionalVerse(emotion, isFirst = false) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
+                provider: currentProvider,
                 model: 'gpt-4.1',
                 messages: [{
                     role: 'user',
@@ -1143,10 +1177,12 @@ async function playPrayerSegment(idx) {
 
         // 準備API請求體
         const requestBody = {
+            provider: currentProvider,
             model: "tts-1",
             voice: selectedVoice,
             input: seg.text,
-            response_format: "mp3"
+            response_format: "mp3",
+            language: currentLanguage
         };
         if (seg.instructions) {
             requestBody.instructions = seg.instructions;
@@ -1216,10 +1252,12 @@ async function playPrayer(encodedText, encodedInstructions = '') {
         
         // 準備API請求體
         const requestBody = {
+            provider: currentProvider,
             model: "tts-1",
             voice: selectedVoice,
             input: text,
-            response_format: "mp3"
+            response_format: "mp3",
+            language: currentLanguage
         };
         
         // 如果有語音指令，添加到請求中

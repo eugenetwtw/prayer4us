@@ -2,6 +2,20 @@ export const config = {
   runtime: 'edge',
 };
 
+const OPENAI_TO_GROK_VOICE = {
+  alloy: 'eve',
+  nova: 'ara',
+  shimmer: 'eve',
+  echo: 'rex',
+  onyx: 'sal',
+  fable: 'leo',
+};
+
+const OPENAI_TO_GROK_MODEL = {
+  'gpt-4.1': 'grok-4-latest',
+  'gpt-4.1-mini': 'grok-3-mini',
+};
+
 export default async function handler(req) {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -22,34 +36,75 @@ export default async function handler(req) {
     });
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    return new Response(JSON.stringify({ error: 'API key not configured' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-
   try {
-    const { model, messages, max_tokens, temperature, voice, input, response_format, instructions } = await req.json();
+    const {
+      provider = 'openai',
+      model,
+      messages,
+      max_tokens,
+      temperature,
+      voice,
+      input,
+      response_format,
+      instructions,
+      language,
+    } = await req.json();
 
-    const isTTS = model === 'tts-1';
+    const useGrok = provider === 'grok';
+    const apiKey = useGrok ? process.env.GROK_API_KEY : process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return new Response(
+        JSON.stringify({ error: `${useGrok ? 'GROK_API_KEY' : 'OPENAI_API_KEY'} not configured` }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
 
-    const openaiBody = isTTS
-      ? { model, voice, input, response_format, ...(instructions ? { instructions } : {}) }
-      : { model, messages, max_tokens, temperature };
+    const isTTS = !!input;
 
-    const response = await fetch(
-      `https://api.openai.com/v1/${isTTS ? 'audio/speech' : 'chat/completions'}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify(openaiBody),
+    let url;
+    let requestBody;
+    if (useGrok) {
+      if (isTTS) {
+        url = 'https://api.x.ai/v1/tts';
+        requestBody = {
+          text: input,
+          voice_id: OPENAI_TO_GROK_VOICE[voice] || 'eve',
+          language: language || 'auto',
+          output_format: { codec: 'mp3' },
+        };
+      } else {
+        url = 'https://api.x.ai/v1/chat/completions';
+        requestBody = {
+          model: OPENAI_TO_GROK_MODEL[model] || model || 'grok-4-latest',
+          messages,
+          max_tokens,
+          temperature,
+        };
       }
-    );
+    } else {
+      if (isTTS) {
+        url = 'https://api.openai.com/v1/audio/speech';
+        requestBody = {
+          model,
+          voice,
+          input,
+          response_format,
+          ...(instructions ? { instructions } : {}),
+        };
+      } else {
+        url = 'https://api.openai.com/v1/chat/completions';
+        requestBody = { model, messages, max_tokens, temperature };
+      }
+    }
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(requestBody),
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -60,7 +115,6 @@ export default async function handler(req) {
     }
 
     if (isTTS) {
-      // Stream audio directly back to client
       return new Response(response.body, {
         status: 200,
         headers: {
