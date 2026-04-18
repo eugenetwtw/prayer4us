@@ -44,6 +44,22 @@ function getDefaultVoice(provider = currentProvider) {
     return getVoices(provider)[0].code;
 }
 
+// 禱告詞以「阿們/Amen」結尾，其後不該再有任何文字；若模型產生額外內容則截掉
+function trimAfterAmen(text) {
+    if (!text) return text;
+    // 匹配多語 Amen 的最後一次出現，含可能的結尾標點
+    const pattern = /(阿們|阿门|アーメン|아멘|Amén|Amen)[\s\S]*?([。！!.．。]|$)/gi;
+    let lastEnd = -1;
+    let m;
+    while ((m = pattern.exec(text)) !== null) {
+        lastEnd = m.index + m[0].length;
+    }
+    if (lastEnd > 0) {
+        return text.slice(0, lastEnd).trim();
+    }
+    return text;
+}
+
 function buildVoiceOptionsHtml(selected) {
     return getVoices().map(v =>
         `<option value="${v.code}" ${selected === v.code ? 'selected' : ''}>${v.label}</option>`
@@ -973,7 +989,7 @@ async function getEmotionalVerse(emotion, isFirst = false) {
                     content: `請針對「${emotion}」情緒：
 1. 提供合適聖經經文(格式：『經文』書名 章:節)${currentLanguage === 'en' || currentLanguage === 'ja' || currentLanguage === 'ko' || currentLanguage === 'de' || currentLanguage === 'fr' || currentLanguage === 'it' || currentLanguage === 'nl' || currentLanguage === 'es' ? '只需' + (currentLanguage === 'en' ? '英文' : currentLanguage === 'ja' ? '日文' : currentLanguage === 'ko' ? '韓文' : currentLanguage === 'de' ? '德文' : currentLanguage === 'fr' ? '法文' : currentLanguage === 'it' ? '義大利文' : currentLanguage === 'nl' ? '荷蘭文' : currentLanguage === 'es' ? '西班牙文' : '') : '同時提出中英文'}
 2. 簡明的解說，50字內，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : currentLanguage === 'de' ? '用德文' : currentLanguage === 'fr' ? '用法文' : currentLanguage === 'it' ? '用義大利文' : currentLanguage === 'nl' ? '用荷蘭文' : currentLanguage === 'es' ? '用西班牙文' : '用繁體中文'}
-3. 禱告詞，${prayerLength}字以上，你是一個資深慈愛的牧師，同情用戶的狀態，深情地為用戶禱告，為用戶設身處地思考，祈求上帝給用戶安慰和力量，同時激發用戶感恩、感謝上帝主的心思以昇華這狀態，用華麗的辭藻，用詩歌般的語言，用最真摯的情感，寫出最感人的禱告詞，激發用戶的感受，讓靈性灌注與降臨，${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : currentLanguage === 'de' ? '用德文' : currentLanguage === 'fr' ? '用法文' : currentLanguage === 'it' ? '用義大利文' : currentLanguage === 'nl' ? '用荷蘭文' : currentLanguage === 'es' ? '用西班牙文' : '用繁體中文'}
+3. 禱告詞，${prayerLength}字以上。【極為重要】此禱告詞將由「用戶本人」親口朗讀給上帝聽，因此必須完全以第一人稱「我」向上帝/天父/主耶穌直接傾訴；主語只能是「我」，對象只能是「祢/你（神）」。嚴格禁止：(a) 任何敘述者/代禱者身份的自稱，例如「身為牧師」、「我這位牧師/牧者/資深牧者」、「作為牧者」等；(b) 任何第三人稱指涉用戶的用語，例如「他/她/他們」、「為他/她/他們」、「使他/她/他們」、「為這位弟兄姊妹」、「為祢的孩子」、「為這位用戶」等；(c) 任何旁白或說明文字。整段須像用戶自己正在禱告。請用最真摯的情感、詩歌般的語言，向神傾訴此刻的狀態，祈求神的安慰與力量，同時流露感恩與讚美以昇華情緒。禱告詞必須以「奉主耶穌基督的名，阿們！」（或對應語言之等義結尾，如 In the name of Jesus Christ, Amen.）作結，且此結尾之後不可再有任何文字、說明、署名或備註。${currentLanguage === 'en' ? '用英文' : currentLanguage === 'zh-Hans' ? '用简体中文' : currentLanguage === 'ja' ? '用日文' : currentLanguage === 'ko' ? '用韓文' : currentLanguage === 'de' ? '用德文' : currentLanguage === 'fr' ? '用法文' : currentLanguage === 'it' ? '用義大利文' : currentLanguage === 'nl' ? '用荷蘭文' : currentLanguage === 'es' ? '用西班牙文' : '用繁體中文'}
 請用以下格式回應：
 【${t('scripture').replace('：', '')}】{內容}
 【${t('explanation').replace('：', '')}】{解說}
@@ -999,7 +1015,7 @@ async function getEmotionalVerse(emotion, isFirst = false) {
 
         if (verseMatch && comfortMatch && prayerMatch) {
             const formatText = (text) => text.replace(/\n/g, '<br>');
-            const prayerText = prayerMatch[1].trim();
+            const prayerText = trimAfterAmen(prayerMatch[1].trim());
             // 取得語音建議
             try {
                 voiceData = await getVoiceAndInstructions(emotion, prayerText);
