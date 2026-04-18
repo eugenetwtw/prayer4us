@@ -17,6 +17,39 @@ let apiKey = '';
 let currentLanguage = '';
 let currentProvider = localStorage.getItem('preferredProvider') || 'openai';
 
+// 各供應商 TTS 語音清單
+const VOICE_CATALOG = {
+    openai: [
+        { code: 'alloy',   label: 'Alloy',   desc: '平衡的聲音，適合一般用途，提供清晰度和溫暖感' },
+        { code: 'echo',    label: 'Echo',    desc: '更動態的聲音，可以為通知增添興奮感' },
+        { code: 'fable',   label: 'Fable',   desc: '講故事的聲音，非常適合讀睡前故事或敘述內容' },
+        { code: 'onyx',    label: 'Onyx',    desc: '深沉且豐富的聲音，適合權威性指令' },
+        { code: 'nova',    label: 'Nova',    desc: '明亮且歡快的聲音，適合友好的互動' },
+        { code: 'shimmer', label: 'Shimmer', desc: '柔和且舒緩的聲音，適合平靜的環境' },
+    ],
+    grok: [
+        { code: 'eve', label: 'Eve', desc: '溫暖女聲，適合敘述與陪伴' },
+        { code: 'ara', label: 'Ara', desc: '明亮女聲，活潑友善' },
+        { code: 'rex', label: 'Rex', desc: '穩重男聲，適合正式、宣告' },
+        { code: 'sal', label: 'Sal', desc: '溫和男聲，平和舒緩' },
+        { code: 'leo', label: 'Leo', desc: '低沉男聲，適合敘事與安慰' },
+    ],
+};
+
+function getVoices(provider = currentProvider) {
+    return VOICE_CATALOG[provider] || VOICE_CATALOG.openai;
+}
+
+function getDefaultVoice(provider = currentProvider) {
+    return getVoices(provider)[0].code;
+}
+
+function buildVoiceOptionsHtml(selected) {
+    return getVoices().map(v =>
+        `<option value="${v.code}" ${selected === v.code ? 'selected' : ''}>${v.label}</option>`
+    ).join('');
+}
+
 // Counter API path - adjusted for actual deployment structure
 const counterApiPath = '/api/counter';
 
@@ -762,24 +795,23 @@ function showPreviousEmotions() {
 // 使用AI一次性選擇最適合情緒的語音和語音指令
 async function getVoiceAndInstructions(emotion, prayerText = '') {
     try {
+        const defaultVoice = getDefaultVoice();
         if (!apiKey) {
-            console.warn('API金鑰未設置，使用默認語音Alloy');
-            return { voice: 'alloy', instructions: '' };
+            console.warn('API金鑰未設置，使用默認語音', defaultVoice);
+            return { voice: defaultVoice, instructions: '' };
         }
-        
+
+        const voices = getVoices();
+        const voiceList = voices.map(v => `   - ${v.label}: ${v.desc}`).join('\n');
+
         // 定義給AI的內容，根據是否有禱告文調整提示
         let content = '';
         if (prayerText) {
             // 如果有禱告文，生成音色選擇和語音指令
             content = `基於用戶情緒「${emotion}」及以下禱告文，請執行兩項任務：
 
-1. 從以下六個OpenAI TTS語音中選擇最適合的一個：
-   - Alloy: 平衡的聲音，適合一般用途，提供清晰度和溫暖感
-   - Echo: 更動態的聲音，可以為通知增添興奮感
-   - Fable: 講故事的聲音，非常適合讀睡前故事或敘述內容
-   - Onyx: 深沉且豐富的聲音，適合權威性指令
-   - Nova: 明亮且歡快的聲音，適合友好的互動
-   - Shimmer: 柔和且舒緩的聲音，適合平靜的環境
+1. 從以下 TTS 語音中選擇最適合的一個：
+${voiceList}
 
 2. 為這段禱告文生成適合的TTS指令：
 """
@@ -799,13 +831,8 @@ Pronunciation: [發音重點描述]
 Pauses: [停頓描述]`;
         } else {
             // 如果沒有禱告文，只選擇音色
-            content = `基於用戶的情緒「${emotion}」，請從以下六個OpenAI TTS語音中選擇最適合的一個:
-Alloy: 平衡的聲音，適合一般用途，提供清晰度和溫暖感
-Echo: 更動態的聲音，可以為通知增添興奮感
-Fable: 講故事的聲音，非常適合讀睡前故事或敘述內容
-Onyx: 深沉且豐富的聲音，適合權威性指令
-Nova: 明亮且歡快的聲音，適合友好的互動
-Shimmer: 柔和且舒緩的聲音，適合平靜的環境
+            content = `基於用戶的情緒「${emotion}」，請從以下 TTS 語音中選擇最適合的一個:
+${voiceList}
 
 請按照以下格式回答：
 VOICE: [選擇的語音名稱，小寫]`;
@@ -843,12 +870,11 @@ VOICE: [選擇的語音名稱，小寫]`;
         
         // 提取語音名稱
         const voiceMatch = responseText.match(/VOICE:\s*(\w+)/i);
-        let voice = 'alloy'; // 默認值
-        
+        let voice = getDefaultVoice();
+
         if (voiceMatch && voiceMatch[1]) {
             const extractedVoice = voiceMatch[1].toLowerCase().trim();
-            // 確保回傳的是有效的語音選項
-            const validVoices = ['alloy', 'echo', 'fable', 'onyx', 'nova', 'shimmer'];
+            const validVoices = getVoices().map(v => v.code);
             if (validVoices.includes(extractedVoice)) {
                 voice = extractedVoice;
             } else {
@@ -868,7 +894,7 @@ VOICE: [選擇的語音名稱，小寫]`;
         return { voice, instructions };
     } catch (error) {
         console.error('獲取語音建議及指令失敗:', error);
-        return { voice: 'alloy', instructions: '' }; // 出錯時使用默認語音
+        return { voice: getDefaultVoice(), instructions: '' }; // 出錯時使用默認語音
     }
 }
 
@@ -915,7 +941,7 @@ async function getEmotionalVerse(emotion, isFirst = false) {
     else prayerLength = 250; // 2~2.5分鐘
 
     // 初始時先設置默認語音，稍後會根據禱告文內容再做選擇
-    let voiceData = { voice: 'alloy', instructions: '' };
+    let voiceData = { voice: getDefaultVoice(), instructions: '' };
 
     try {
         const verseElement = document.getElementById('verse');
@@ -1056,12 +1082,7 @@ function renderPrayerSegments(scripture, explanation) {
                 </button>
                 <span id="voice-selector-label-${idx}" style="margin-left:10px;">${t('voiceSelector')}:</span>
                 <select id="voice-selector-${idx}" style="padding:5px;border-radius:5px;">
-                    <option value="alloy" ${seg.voice === 'alloy' ? 'selected' : ''}>${t('alloy')}</option>
-                    <option value="echo" ${seg.voice === 'echo' ? 'selected' : ''}>${t('echo')}</option>
-                    <option value="fable" ${seg.voice === 'fable' ? 'selected' : ''}>${t('fable')}</option>
-                    <option value="onyx" ${seg.voice === 'onyx' ? 'selected' : ''}>${t('onyx')}</option>
-                    <option value="nova" ${seg.voice === 'nova' ? 'selected' : ''}>${t('nova')}</option>
-                    <option value="shimmer" ${seg.voice === 'shimmer' ? 'selected' : ''}>${t('shimmer')}</option>
+                    ${buildVoiceOptionsHtml(seg.voice)}
                 </select>
                 <audio id="prayer-audio-${idx}" controls style="display:none;margin-top:10px;width:100%;"></audio>
             </div>
@@ -1104,12 +1125,7 @@ function renderPrayerLoading() {
                 </button>
                 <span id="voice-selector-label-${idx}" style="margin-left:10px;">${t('voiceSelector')}:</span>
                 <select id="voice-selector-${idx}" style="padding:5px;border-radius:5px;">
-                    <option value="alloy" ${seg.voice === 'alloy' ? 'selected' : ''}>${t('alloy')}</option>
-                    <option value="echo" ${seg.voice === 'echo' ? 'selected' : ''}>${t('echo')}</option>
-                    <option value="fable" ${seg.voice === 'fable' ? 'selected' : ''}>${t('fable')}</option>
-                    <option value="onyx" ${seg.voice === 'onyx' ? 'selected' : ''}>${t('onyx')}</option>
-                    <option value="nova" ${seg.voice === 'nova' ? 'selected' : ''}>${t('nova')}</option>
-                    <option value="shimmer" ${seg.voice === 'shimmer' ? 'selected' : ''}>${t('shimmer')}</option>
+                    ${buildVoiceOptionsHtml(seg.voice)}
                 </select>
                 <audio id="prayer-audio-${idx}" controls style="display:none;margin-top:10px;width:100%;"></audio>
             </div>
@@ -1237,7 +1253,7 @@ async function playPrayer(encodedText, encodedInstructions = '') {
     const spinner = document.getElementById('loading-spinner');
     const playText = document.getElementById('play-text');
     const voiceSelector = document.getElementById('voice-selector');
-    const selectedVoice = voiceSelector ? voiceSelector.value : 'alloy';
+    const selectedVoice = voiceSelector ? voiceSelector.value : getDefaultVoice();
     
     // 記錄音頻生成事件
     await recordAudioGeneration(currentLanguage);

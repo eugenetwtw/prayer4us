@@ -2,14 +2,7 @@ export const config = {
   runtime: 'edge',
 };
 
-const OPENAI_TO_GROK_VOICE = {
-  alloy: 'eve',
-  nova: 'ara',
-  shimmer: 'eve',
-  echo: 'rex',
-  onyx: 'sal',
-  fable: 'leo',
-};
+const GROK_VOICES = ['eve', 'ara', 'rex', 'sal', 'leo'];
 
 const OPENAI_TO_GROK_MODEL = {
   'gpt-4.1': 'grok-4-fast-non-reasoning',
@@ -68,7 +61,7 @@ export default async function handler(req) {
         url = 'https://api.x.ai/v1/tts';
         requestBody = {
           text: input,
-          voice_id: OPENAI_TO_GROK_VOICE[voice] || 'eve',
+          voice_id: GROK_VOICES.includes(voice) ? voice : 'eve',
           language: language || 'auto',
           output_format: { codec: 'mp3' },
         };
