@@ -12,8 +12,8 @@ const OPENAI_TO_GROK_VOICE = {
 };
 
 const OPENAI_TO_GROK_MODEL = {
-  'gpt-4.1': 'grok-4-latest',
-  'gpt-4.1-mini': 'grok-3-mini',
+  'gpt-4.1': 'grok-4-fast-non-reasoning',
+  'gpt-4.1-mini': 'grok-4-fast-non-reasoning',
 };
 
 export default async function handler(req) {
@@ -75,7 +75,7 @@ export default async function handler(req) {
       } else {
         url = 'https://api.x.ai/v1/chat/completions';
         requestBody = {
-          model: OPENAI_TO_GROK_MODEL[model] || model || 'grok-4-latest',
+          model: OPENAI_TO_GROK_MODEL[model] || model || 'grok-4-fast-non-reasoning',
           messages,
           max_tokens,
           temperature,
